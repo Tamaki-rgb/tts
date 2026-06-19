@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>НОЧНОЙ ЭФИР — студия озвучки</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
 <style>
   :root{
     --bg:#0b0a0d;
@@ -165,6 +166,26 @@
   .preset .pdesc{font-size:10px; color:var(--bone-dim); margin-top:4px;}
 
   ::selection{background:var(--ember); color:#1a0e0a;}
+
+  .editor-card{grid-column:1 / -1;}
+  .wave-wrap{
+    position:relative; background:var(--bg); border:1px solid var(--line);
+    height:140px; margin-top:14px; overflow:hidden; cursor:text;
+    user-select:none;
+  }
+  canvas#waveCanvas{display:block; width:100%; height:100%;}
+  .sel-overlay{position:absolute; top:0; bottom:0; background:rgba(255,90,54,.18); border-left:1px solid var(--ember); border-right:1px solid var(--ember); pointer-events:none; display:none;}
+  .playhead{position:absolute; top:0; bottom:0; width:1px; background:var(--bone); pointer-events:none; display:none;}
+  .wave-empty{display:flex; align-items:center; justify-content:center; height:100%; color:var(--bone-dim); font-size:12px; letter-spacing:.05em;}
+  .time-row{display:flex; justify-content:space-between; font-size:10px; color:var(--bone-dim); margin-top:6px; letter-spacing:.04em;}
+  .edit-toolbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+  .edit-toolbar .btn{font-size:11px; padding:9px 14px;}
+  .edit-toolbar .btn.danger{border-color:#7a2c2c; color:#e08a8a;}
+  .edit-toolbar .btn.danger:hover{border-color:#c84a4a; color:#fff; background:rgba(200,74,74,.1);}
+  .history-tag{font-size:10px; color:var(--bone-dim); margin-top:8px; letter-spacing:.04em;}
+  .fmt-toggle{display:flex; gap:0; border:1px solid var(--line); width:fit-content; margin-top:14px;}
+  .fmt-toggle button{background:transparent; border:none; color:var(--bone-dim); padding:8px 16px; font-family:inherit; font-size:11px; letter-spacing:.06em; cursor:pointer;}
+  .fmt-toggle button.sel{background:var(--ember-dim); color:var(--bone);}
 </style>
 </head>
 <body>
@@ -248,10 +269,17 @@
         <div class="btnrow">
           <button class="btn primary" id="ttsPlay" onclick="App.speak()">▶ Озвучить</button>
           <button class="btn" onclick="App.stopSpeak()">■ Стоп</button>
-          <button class="btn" onclick="App.recordTTS()" id="ttsRecBtn">● Записать в файл</button>
+          <button class="btn rec" id="ttsRecBtn" onclick="App.recordTTS()">● Записать вкладку в файл</button>
         </div>
-        <div class="hint" id="ttsHint">Озвучка использует голоса, встроенные в ваш браузер/ОС (Web Speech API). Набор и качество голосов зависят от устройства — на телефоне и компьютере списки могут отличаться. Запись «в файл» захватывает звук с динамиков во время воспроизведения.</div>
+        <div class="fmt-toggle" id="ttsFmtToggle">
+          <button class="sel" data-fmt="wav">WAV</button>
+          <button data-fmt="mp3">MP3</button>
+        </div>
+        <div class="hint" id="ttsHint">Озвучка использует голоса, встроенные в ваш браузер/ОС. «Записать вкладку» откроет системное окно выбора — выберите ЭТУ вкладку с галочкой «Поделиться звуком» и сразу нажмите «Озвучить». Работает в Chrome/Edge на компьютере; на телефоне и в Safari такой захват браузеры не разрешают.</div>
         <audio id="ttsAudioOut" controls style="display:none;"></audio>
+        <div class="btnrow" id="ttsDlRow" style="display:none;">
+          <button class="btn" onclick="App.downloadTTS()">↓ Скачать запись</button>
+        </div>
       </div>
 
       <div class="card">
@@ -273,24 +301,50 @@
           <input type="file" id="fileInput" accept="audio/*" style="display:none;">
         </div>
         <div class="meter" id="meter"></div>
-        <audio id="rawAudio" controls style="display:none;"></audio>
         <div class="hint">Запись идёт прямо в браузере через микрофон — звук никуда не отправляется, обработка происходит локально на вашем устройстве.</div>
       </div>
 
       <div class="card">
-        <h2><span class="n">02</span>Пресеты изменения голоса</h2>
+        <h2><span class="n">02</span>Пресет для выделенного участка</h2>
         <div class="preset-grid" id="presetGrid"></div>
         <label>Тонкая настройка тона</label>
         <div class="valrow"><span></span><span class="v" id="manualPitchVal">+0</span></div>
         <input type="range" id="manualPitch" min="-12" max="12" step="1" value="0">
         <label>Эхо / реверберация</label>
         <input type="range" id="echoAmt" min="0" max="0.6" step="0.02" value="0">
-        <div class="btnrow">
-          <button class="btn primary" onclick="App.applyVoiceChange()">⚙ Применить эффект</button>
-          <button class="btn" onclick="App.playProcessed()" id="playProcBtn" disabled>▶ Прослушать результат</button>
-          <button class="btn" onclick="App.downloadProcessed()" id="dlProcBtn" disabled>↓ Скачать .wav</button>
+        <div class="hint">Если на таймлайне ничего не выделено — эффект применится ко всей записи. Если выделить участок мышью/пальцем — эффект применится только к нему.</div>
+      </div>
+
+      <div class="card editor-card">
+        <h2><span class="n">03</span>Таймлайн — редактор записи</h2>
+        <div class="wave-wrap" id="waveWrap">
+          <canvas id="waveCanvas"></canvas>
+          <div class="sel-overlay" id="selOverlay"></div>
+          <div class="playhead" id="playhead"></div>
+          <div class="wave-empty" id="waveEmpty">запишите или загрузите голос, чтобы увидеть волну</div>
         </div>
-        <audio id="procAudio" controls style="display:none;"></audio>
+        <div class="time-row"><span id="timeStart">0:00</span><span id="timeTotal">0:00</span></div>
+
+        <div class="edit-toolbar">
+          <button class="btn primary" onclick="App.applyVoiceChange()">⚙ Применить эффект</button>
+          <button class="btn" onclick="App.playSelection()">▶ Прослушать</button>
+          <button class="btn" onclick="App.pauseAll()">■ Стоп</button>
+          <button class="btn" onclick="App.duplicateSelection()">⧉ Повторить выделенное</button>
+          <button class="btn" onclick="App.addSilence()">+ Добавить тишину (1с)</button>
+          <button class="btn danger" onclick="App.deleteSelection()">✕ Удалить выделенное</button>
+          <button class="btn" onclick="App.undo()" id="undoBtn" disabled>↺ Отменить</button>
+          <button class="btn" onclick="App.clearSelection()">Снять выделение</button>
+        </div>
+        <div class="history-tag" id="historyTag">История изменений: 0</div>
+
+        <div class="fmt-toggle" id="changerFmtToggle">
+          <button class="sel" data-fmt="wav">WAV</button>
+          <button data-fmt="mp3">MP3</button>
+        </div>
+        <div class="btnrow">
+          <button class="btn" onclick="App.downloadProcessed()">↓ Скачать результат</button>
+        </div>
+        <audio id="procAudio" style="display:none;"></audio>
       </div>
     </div>
   </section>
@@ -305,9 +359,13 @@ const App = (() => {
   let voices = [];
   let selectedVoice = null;
   let mediaRecorder, recordedChunks = [], micStream, audioCtx, analyser, meterBars=[];
-  let rawAudioBuffer = null; // decoded AudioBuffer of recorded/uploaded voice
-  let processedBuffer = null;
-  let selectedPreset = 'normal';
+  let history = [];       // undo stack of AudioBuffers
+  let currentBuffer = null; // the working AudioBuffer shown on timeline
+  let selStart = null, selEnd = null; // in seconds
+  let isDragging = false, dragStartX = 0;
+  let playingNode = null;
+  let ttsFmt = 'wav', changerFmt = 'wav';
+  let tabStream = null, tabRecorder = null, tabChunks = [], ttsRecordedBlob = null;
 
   const presets = [
     {id:'normal', name:'Обычный', desc:'Без изменений', pitch:0, rate:1, echo:0},
@@ -321,7 +379,7 @@ const App = (() => {
   function toast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2400);
+    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2600);
   }
 
   function initTabs(){
@@ -331,13 +389,29 @@ const App = (() => {
         document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.dataset.tab).classList.add('active');
+        if(btn.dataset.tab === 'changer') drawWave();
       });
+    });
+  }
+
+  function initFmtToggles(){
+    document.querySelectorAll('#ttsFmtToggle button').forEach(b=>{
+      b.onclick = ()=>{
+        document.querySelectorAll('#ttsFmtToggle button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); ttsFmt = b.dataset.fmt;
+      };
+    });
+    document.querySelectorAll('#changerFmtToggle button').forEach(b=>{
+      b.onclick = ()=>{
+        document.querySelectorAll('#changerFmtToggle button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); changerFmt = b.dataset.fmt;
+      };
     });
   }
 
   function tagFor(v){
     const n = (v.name+v.lang).toLowerCase();
-    if(n.includes('male') || n.includes('man') || /\b(ru-ru.*standard.*b|dmitri|pavel|yuri|google\s*русский)\b/.test(n)) return 'мужской';
+    if(n.includes('male') || n.includes('man')) return 'мужской';
     if(n.includes('female') || n.includes('woman')) return 'женский';
     return 'голос системы';
   }
@@ -351,21 +425,13 @@ const App = (() => {
         list.innerHTML = '<div class="hint">Голоса ещё загружаются... если список не появится — браузер может не поддерживать синтез речи на этом устройстве.</div>';
         return;
       }
-      // sort: ru first
-      const sorted = [...voices].sort((a,b)=>{
-        const ar = a.lang.startsWith('ru') ? 0 : 1;
-        const br = b.lang.startsWith('ru') ? 0 : 1;
-        return ar-br;
-      });
-      sorted.forEach((v,i)=>{
+      const sorted = [...voices].sort((a,b)=> (a.lang.startsWith('ru')?0:1) - (b.lang.startsWith('ru')?0:1));
+      sorted.forEach(v=>{
         const card = document.createElement('div');
         card.className = 'voice-card' + (selectedVoice===v.name ? ' sel':'');
         card.innerHTML = `<div><div class="vname">${v.name}</div><div class="vtag">${v.lang} · ${tagFor(v)}</div></div><div class="play">▶ тест</div>`;
         card.onclick = (e)=>{
-          if(e.target.classList.contains('play')){
-            App.testVoice(v);
-            return;
-          }
+          if(e.target.classList.contains('play')){ App.testVoice(v); return; }
           document.querySelectorAll('.voice-card').forEach(c=>c.classList.remove('sel'));
           card.classList.add('sel');
           selectedVoice = v.name;
@@ -381,8 +447,8 @@ const App = (() => {
   function initSliders(){
     const bind = (id, valId, fmt) => {
       const el = document.getElementById(id);
-      const out = document.getElementById(valId);
-      const update = ()=> out.textContent = fmt(el.value);
+      const out = valId ? document.getElementById(valId) : null;
+      const update = ()=> { if(out) out.textContent = fmt(el.value); };
       el.addEventListener('input', update); update();
     };
     bind('rate','rateVal', v=>parseFloat(v).toFixed(2)+'×');
@@ -390,7 +456,6 @@ const App = (() => {
     bind('vol','volVal', v=>Math.round(v*100)+'%');
     bind('pause','pauseVal', v=>v+'мс');
     bind('manualPitch','manualPitchVal', v=>(v>0?'+':'')+v+' полутонов');
-    bind('echoAmt', null, ()=>'');
   }
 
   function initPresets(){
@@ -402,7 +467,6 @@ const App = (() => {
       btn.onclick = ()=>{
         document.querySelectorAll('.preset').forEach(x=>x.classList.remove('sel'));
         btn.classList.add('sel');
-        selectedPreset = p.id;
         document.getElementById('manualPitch').value = p.pitch;
         document.getElementById('manualPitchVal').textContent = (p.pitch>0?'+':'')+p.pitch+' полутонов';
         document.getElementById('echoAmt').value = p.echo;
@@ -440,7 +504,6 @@ const App = (() => {
   }
 
   // ---------- TTS ----------
-  let currentUtterance = null;
   function speak(){
     const text = document.getElementById('ttsText').value.trim();
     if(!text){ toast('Введите текст'); return; }
@@ -450,7 +513,10 @@ const App = (() => {
     const v = voices.find(v=>v.name===selectedVoice);
     let i = 0;
     function next(){
-      if(i>=sentences.length) return;
+      if(i>=sentences.length){
+        if(tabRecorder && tabRecorder.state==='recording') setTimeout(()=>tabRecorder.stop(), 400);
+        return;
+      }
       const u = new SpeechSynthesisUtterance(sentences[i]);
       if(v) u.voice = v;
       u.rate = parseFloat(document.getElementById('rate').value);
@@ -458,33 +524,59 @@ const App = (() => {
       u.volume = parseFloat(document.getElementById('vol').value);
       u.onend = ()=>{ i++; setTimeout(next, pauseMs); };
       window.speechSynthesis.speak(u);
-      currentUtterance = u;
     }
     next();
   }
   function stopSpeak(){ window.speechSynthesis.cancel(); }
 
-  let ttsRecording = false, ttsRecorder, ttsChunks=[];
   async function recordTTS(){
-    if(!ttsRecording){
-      try{
-        const dest = audioCtx ? null : null;
-        // capture via display/tab audio is restrictive; instead offer mic-free note
-        toast('Захват системного звука ограничен браузером — используйте запись экрана/звука ОС, либо вкладку «Смена голоса» для готовых файлов.');
-      }catch(e){ toast('Запись недоступна в этом браузере'); }
+    try{
+      tabStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
+      const audioTracks = tabStream.getAudioTracks();
+      if(audioTracks.length===0){
+        toast('Звук вкладки не выбран — отметьте галочку «Поделиться звуком» в окне выбора');
+        tabStream.getTracks().forEach(t=>t.stop());
+        return;
+      }
+      tabChunks = [];
+      tabRecorder = new MediaRecorder(tabStream);
+      tabRecorder.ondataavailable = e=> tabChunks.push(e.data);
+      tabRecorder.onstop = ()=>{
+        ttsRecordedBlob = new Blob(tabChunks, {type:'audio/webm'});
+        const url = URL.createObjectURL(ttsRecordedBlob);
+        const out = document.getElementById('ttsAudioOut');
+        out.src = url; out.style.display='block';
+        document.getElementById('ttsDlRow').style.display='flex';
+        tabStream.getTracks().forEach(t=>t.stop());
+        toast('Запись готова');
+      };
+      tabRecorder.start();
+      toast('Идёт запись вкладки — теперь нажмите «Озвучить»');
+    }catch(e){
+      toast('Захват вкладки недоступен в этом браузере/устройстве');
     }
   }
 
-  // ---------- VOICE CHANGER ----------
+  async function downloadTTS(){
+    if(!ttsRecordedBlob){ toast('Сначала запишите озвучку'); return; }
+    if(ttsFmt === 'wav'){
+      const arrBuf = await ttsRecordedBlob.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      triggerDownload(bufferToWav(buf), 'tts_record.wav');
+    } else {
+      const arrBuf = await ttsRecordedBlob.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      triggerDownload(bufferToMp3(buf), 'tts_record.mp3');
+    }
+  }
+
+  // ---------- VOICE CHANGER: recording ----------
   function setupMeterBars(){
     const meter = document.getElementById('meter');
-    meter.innerHTML='';
-    meterBars=[];
-    for(let i=0;i<48;i++){
-      const s = document.createElement('span');
-      meter.appendChild(s);
-      meterBars.push(s);
-    }
+    meter.innerHTML=''; meterBars=[];
+    for(let i=0;i<48;i++){ const s=document.createElement('span'); meter.appendChild(s); meterBars.push(s); }
   }
 
   async function toggleRecord(){
@@ -502,28 +594,23 @@ const App = (() => {
       mediaRecorder.ondataavailable = e=> recordedChunks.push(e.data);
       mediaRecorder.onstop = async ()=>{
         const blob = new Blob(recordedChunks, {type:'audio/webm'});
-        const url = URL.createObjectURL(blob);
-        const rawAudio = document.getElementById('rawAudio');
-        rawAudio.src = url; rawAudio.style.display='block';
         const arrBuf = await blob.arrayBuffer();
         const ctx = getCtx();
-        rawAudioBuffer = await ctx.decodeAudioData(arrBuf);
-        toast('Запись готова. Выберите пресет и нажмите «Применить эффект».');
+        const buf = await ctx.decodeAudioData(arrBuf);
+        setBuffer(buf, true);
+        toast('Запись готова — отредактируйте на таймлайне');
       };
       mediaRecorder.start();
       btn.classList.add('on'); btn.textContent='■ Стоп';
       startMeter(micStream);
-    }catch(e){
-      toast('Нет доступа к микрофону');
-    }
+    }catch(e){ toast('Нет доступа к микрофону'); }
   }
 
   function startMeter(stream){
     setupMeterBars();
     const ctx = getCtx();
     const src = ctx.createMediaStreamSource(stream);
-    analyser = ctx.createAnalyser();
-    analyser.fftSize = 128;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 128;
     src.connect(analyser);
     const data = new Uint8Array(analyser.frequencyBinCount);
     function draw(){
@@ -531,7 +618,7 @@ const App = (() => {
       analyser.getByteFrequencyData(data);
       meterBars.forEach((bar,i)=>{
         const v = data[i % data.length] || 0;
-        bar.style.height = Math.max(2, (v/255)*44) + 'px';
+        bar.style.height = Math.max(2,(v/255)*44)+'px';
         bar.style.background = v>180 ? 'var(--ember)' : 'var(--static)';
       });
       requestAnimationFrame(draw);
@@ -544,87 +631,256 @@ const App = (() => {
     return audioCtx;
   }
 
-  function uploadAudio(){
-    document.getElementById('fileInput').click();
-  }
-  document_addUploadListener();
-  function document_addUploadListener(){
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('fileInput').addEventListener('change', async (e)=>{
-        const file = e.target.files[0];
-        if(!file) return;
-        const url = URL.createObjectURL(file);
-        const rawAudio = document.getElementById('rawAudio');
-        rawAudio.src = url; rawAudio.style.display='block';
-        const arrBuf = await file.arrayBuffer();
-        const ctx = getCtx();
-        rawAudioBuffer = await ctx.decodeAudioData(arrBuf);
-        toast('Файл загружен. Можно применять эффект.');
-      });
+  function uploadAudio(){ document.getElementById('fileInput').click(); }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('fileInput').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const arrBuf = await file.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      setBuffer(buf, true);
+      toast('Файл загружен — отредактируйте на таймлайне');
     });
+  });
+
+  // ---------- TIMELINE / WAVEFORM EDITOR ----------
+  function setBuffer(buf, resetHistory){
+    if(resetHistory) history = [];
+    if(currentBuffer) history.push(currentBuffer);
+    currentBuffer = buf;
+    selStart = null; selEnd = null;
+    document.getElementById('undoBtn').disabled = history.length===0;
+    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
+    document.getElementById('waveEmpty').style.display = 'none';
+    drawWave();
   }
 
-  // Simple pitch-shift via resampling (changes pitch & speed together) +
-  // a separate time-stretch pass using OfflineAudioContext playbackRate trick,
-  // plus optional echo by convolution-free delayed mix.
+  function undo(){
+    if(history.length===0) return;
+    currentBuffer = history.pop();
+    selStart = null; selEnd = null;
+    document.getElementById('undoBtn').disabled = history.length===0;
+    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
+    drawWave();
+    toast('Отменено');
+  }
+
+  function fmtTime(s){
+    if(!isFinite(s)) s=0;
+    const m = Math.floor(s/60), sec = Math.floor(s%60);
+    return m+':'+String(sec).padStart(2,'0');
+  }
+
+  function drawWave(){
+    const canvas = document.getElementById('waveCanvas');
+    const wrap = document.getElementById('waveWrap');
+    if(!currentBuffer){ document.getElementById('waveEmpty').style.display='flex'; return; }
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    canvas.width = w * devicePixelRatio; canvas.height = h * devicePixelRatio;
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx.clearRect(0,0,w,h);
+    const data = currentBuffer.getChannelData(0);
+    const step = Math.ceil(data.length / w);
+    const mid = h/2;
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ember-dim').trim() || '#7a2c1c';
+    for(let x=0;x<w;x++){
+      let min=1, max=-1;
+      for(let j=0;j<step;j++){
+        const idx = x*step+j;
+        if(idx>=data.length) break;
+        const v = data[idx];
+        if(v<min) min=v; if(v>max) max=v;
+      }
+      const y1 = mid + min*mid*0.92;
+      const y2 = mid + max*mid*0.92;
+      ctx.fillRect(x, y1, 1, Math.max(1,y2-y1));
+    }
+    document.getElementById('timeTotal').textContent = fmtTime(currentBuffer.duration);
+    updateSelOverlay();
+  }
+
+  function pxToSec(px){
+    const wrap = document.getElementById('waveWrap');
+    const ratio = px / wrap.clientWidth;
+    return Math.max(0, Math.min(currentBuffer.duration, ratio * currentBuffer.duration));
+  }
+  function secToPx(sec){
+    const wrap = document.getElementById('waveWrap');
+    return (sec/currentBuffer.duration) * wrap.clientWidth;
+  }
+
+  function updateSelOverlay(){
+    const ov = document.getElementById('selOverlay');
+    if(selStart===null || selEnd===null || !currentBuffer){ ov.style.display='none'; document.getElementById('timeStart').textContent = fmtTime(0); return; }
+    const a = Math.min(selStart, selEnd), b = Math.max(selStart, selEnd);
+    ov.style.display='block';
+    ov.style.left = secToPx(a)+'px';
+    ov.style.width = (secToPx(b)-secToPx(a))+'px';
+    document.getElementById('timeStart').textContent = fmtTime(a)+' – '+fmtTime(b);
+  }
+
+  function initWaveInteraction(){
+    const wrap = document.getElementById('waveWrap');
+    wrap.addEventListener('pointerdown', (e)=>{
+      if(!currentBuffer) return;
+      isDragging = true;
+      const rect = wrap.getBoundingClientRect();
+      dragStartX = e.clientX - rect.left;
+      selStart = pxToSec(dragStartX); selEnd = selStart;
+      updateSelOverlay();
+    });
+    wrap.addEventListener('pointermove', (e)=>{
+      if(!isDragging || !currentBuffer) return;
+      const rect = wrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      selEnd = pxToSec(x);
+      updateSelOverlay();
+    });
+    window.addEventListener('pointerup', ()=> isDragging=false);
+    window.addEventListener('resize', drawWave);
+  }
+
+  function clearSelection(){ selStart=null; selEnd=null; updateSelOverlay(); }
+
+  function getSelRange(){
+    if(selStart===null || selEnd===null || Math.abs(selEnd-selStart) < 0.02) return null;
+    return [Math.min(selStart,selEnd), Math.max(selStart,selEnd)];
+  }
+
+  function sliceBuffer(buf, startSec, endSec){
+    const ctx = getCtx();
+    const sr = buf.sampleRate;
+    const s = Math.floor(startSec*sr), e = Math.floor(endSec*sr);
+    const len = e-s;
+    const out = ctx.createBuffer(buf.numberOfChannels, len, sr);
+    for(let ch=0; ch<buf.numberOfChannels; ch++){
+      out.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+    }
+    return out;
+  }
+
+  function concatBuffers(buffers){
+    const ctx = getCtx();
+    const numCh = buffers[0].numberOfChannels;
+    const sr = buffers[0].sampleRate;
+    const totalLen = buffers.reduce((a,b)=>a+b.length,0);
+    const out = ctx.createBuffer(numCh, totalLen, sr);
+    for(let ch=0; ch<numCh; ch++){
+      let offset = 0;
+      const outData = out.getChannelData(ch);
+      buffers.forEach(b=>{
+        outData.set(b.getChannelData(Math.min(ch,b.numberOfChannels-1)), offset);
+        offset += b.length;
+      });
+    }
+    return out;
+  }
+
+  function deleteSelection(){
+    const range = getSelRange();
+    if(!range){ toast('Сначала выделите участок на волне'); return; }
+    const [a,b] = range;
+    const parts = [];
+    if(a>0) parts.push(sliceBuffer(currentBuffer, 0, a));
+    if(b<currentBuffer.duration) parts.push(sliceBuffer(currentBuffer, b, currentBuffer.duration));
+    const result = parts.length ? concatBuffers(parts) : sliceBuffer(currentBuffer,0,0.01);
+    setBuffer(result, false);
+    toast('Участок удалён');
+  }
+
+  function duplicateSelection(){
+    const range = getSelRange();
+    if(!range){ toast('Сначала выделите участок для повтора'); return; }
+    const [a,b] = range;
+    const piece = sliceBuffer(currentBuffer, a, b);
+    const parts = [sliceBuffer(currentBuffer,0,b), piece, sliceBuffer(currentBuffer,b,currentBuffer.duration)];
+    const result = concatBuffers(parts);
+    setBuffer(result, false);
+    toast('Участок продублирован — запись удлинена');
+  }
+
+  function addSilence(){
+    const ctx = getCtx();
+    const point = (selEnd!==null) ? Math.max(selStart,selEnd) : (currentBuffer ? currentBuffer.duration : 0);
+    if(!currentBuffer){ toast('Сначала запишите голос'); return; }
+    const silence = ctx.createBuffer(currentBuffer.numberOfChannels, Math.floor(1*currentBuffer.sampleRate), currentBuffer.sampleRate);
+    const parts = [sliceBuffer(currentBuffer,0,point), silence, sliceBuffer(currentBuffer,point,currentBuffer.duration)];
+    setBuffer(concatBuffers(parts), false);
+    toast('Добавлена секунда тишины');
+  }
+
   async function applyVoiceChange(){
-    if(!rawAudioBuffer){ toast('Сначала запишите или загрузите голос'); return; }
+    if(!currentBuffer){ toast('Сначала запишите или загрузите голос'); return; }
     const semitones = parseFloat(document.getElementById('manualPitch').value);
     const echoAmt = parseFloat(document.getElementById('echoAmt').value);
     const rateFactor = Math.pow(2, semitones/12);
+    const range = getSelRange();
 
-    const srcBuf = rawAudioBuffer;
-    const ctx = getCtx();
-    const newLength = Math.ceil(srcBuf.length / rateFactor);
-    const offline = new OfflineAudioContext(srcBuf.numberOfChannels, newLength + ctx.sampleRate*0.5, srcBuf.sampleRate);
-
-    const srcNode = offline.createBufferSource();
-    srcNode.buffer = srcBuf;
-    srcNode.playbackRate.value = rateFactor;
-
-    const dry = offline.createGain();
-    dry.gain.value = 1;
-    srcNode.connect(dry);
-    dry.connect(offline.destination);
-
-    if(echoAmt > 0){
-      const delay = offline.createDelay(1.0);
-      delay.delayTime.value = 0.18;
-      const feedback = offline.createGain();
-      feedback.gain.value = echoAmt;
-      const wet = offline.createGain();
-      wet.gain.value = echoAmt;
-      srcNode.connect(delay);
-      delay.connect(feedback);
-      feedback.connect(delay);
-      delay.connect(wet);
-      wet.connect(offline.destination);
+    async function processPiece(buf){
+      const ctx = getCtx();
+      const newLength = Math.ceil(buf.length / rateFactor);
+      const offline = new OfflineAudioContext(buf.numberOfChannels, newLength + ctx.sampleRate*0.5, buf.sampleRate);
+      const srcNode = offline.createBufferSource();
+      srcNode.buffer = buf;
+      srcNode.playbackRate.value = rateFactor;
+      const dry = offline.createGain(); dry.gain.value = 1;
+      srcNode.connect(dry); dry.connect(offline.destination);
+      if(echoAmt > 0){
+        const delay = offline.createDelay(1.0); delay.delayTime.value = 0.18;
+        const feedback = offline.createGain(); feedback.gain.value = echoAmt;
+        const wet = offline.createGain(); wet.gain.value = echoAmt;
+        srcNode.connect(delay); delay.connect(feedback); feedback.connect(delay);
+        delay.connect(wet); wet.connect(offline.destination);
+      }
+      srcNode.start(0);
+      return await offline.startRendering();
     }
 
-    srcNode.start(0);
     toast('Обработка...');
-    const rendered = await offline.startRendering();
-    processedBuffer = rendered;
-
-    const wavBlob = bufferToWav(rendered);
-    const url = URL.createObjectURL(wavBlob);
-    const procAudio = document.getElementById('procAudio');
-    procAudio.src = url; procAudio.style.display='block';
-    document.getElementById('playProcBtn').disabled = false;
-    document.getElementById('dlProcBtn').disabled = false;
-    toast('Готово! Эффект применён.');
+    if(range){
+      const [a,b] = range;
+      const before = a>0 ? sliceBuffer(currentBuffer,0,a) : null;
+      const mid = sliceBuffer(currentBuffer,a,b);
+      const after = b<currentBuffer.duration ? sliceBuffer(currentBuffer,b,currentBuffer.duration) : null;
+      const processedMid = await processPiece(mid);
+      const parts = [before, processedMid, after].filter(Boolean);
+      setBuffer(concatBuffers(parts), false);
+    } else {
+      const processed = await processPiece(currentBuffer);
+      setBuffer(processed, false);
+    }
+    toast('Эффект применён');
   }
 
-  function playProcessed(){
-    document.getElementById('procAudio').play();
+  function playSelection(){
+    if(!currentBuffer) return;
+    pauseAll();
+    const ctx = getCtx();
+    const range = getSelRange();
+    const buf = range ? sliceBuffer(currentBuffer, range[0], range[1]) : currentBuffer;
+    playingNode = ctx.createBufferSource();
+    playingNode.buffer = buf;
+    playingNode.connect(ctx.destination);
+    playingNode.start();
   }
-  function downloadProcessed(){
-    const procAudio = document.getElementById('procAudio');
-    if(!procAudio.src) return;
+  function pauseAll(){
+    if(playingNode){ try{playingNode.stop();}catch(e){} playingNode=null; }
+  }
+
+  function triggerDownload(blob, filename){
     const a = document.createElement('a');
-    a.href = procAudio.src;
-    a.download = 'voice_changed.wav';
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
     a.click();
+  }
+
+  function downloadProcessed(){
+    if(!currentBuffer){ toast('Нечего скачивать'); return; }
+    if(changerFmt === 'wav') triggerDownload(bufferToWav(currentBuffer), 'voice_changed.wav');
+    else triggerDownload(bufferToMp3(currentBuffer), 'voice_changed.mp3');
   }
 
   // PCM AudioBuffer -> WAV Blob
@@ -653,6 +909,34 @@ const App = (() => {
     return new Blob([view], {type:'audio/wav'});
   }
 
+  // AudioBuffer -> MP3 Blob using lamejs
+  function bufferToMp3(buffer){
+    const numCh = Math.min(2, buffer.numberOfChannels);
+    const sampleRate = buffer.sampleRate;
+    const mp3enc = new lamejs.Mp3Encoder(numCh, sampleRate, 128);
+    const blockSize = 1152;
+    const left = floatTo16(buffer.getChannelData(0));
+    const right = numCh>1 ? floatTo16(buffer.getChannelData(1)) : null;
+    const chunks = [];
+    for(let i=0; i<left.length; i+=blockSize){
+      const lChunk = left.subarray(i, i+blockSize);
+      const rChunk = right ? right.subarray(i, i+blockSize) : undefined;
+      const mp3buf = right ? mp3enc.encodeBuffer(lChunk, rChunk) : mp3enc.encodeBuffer(lChunk);
+      if(mp3buf.length>0) chunks.push(mp3buf);
+    }
+    const end = mp3enc.flush();
+    if(end.length>0) chunks.push(end);
+    return new Blob(chunks, {type:'audio/mp3'});
+  }
+  function floatTo16(float32){
+    const out = new Int16Array(float32.length);
+    for(let i=0;i<float32.length;i++){
+      let s = Math.max(-1, Math.min(1, float32[i]));
+      out[i] = s<0 ? s*0x8000 : s*0x7FFF;
+    }
+    return out;
+  }
+
   function testVoice(v){
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance('Это тестовая фраза, чтобы услышать тембр голоса.');
@@ -665,12 +949,15 @@ const App = (() => {
     initVoices();
     initSliders();
     initPresets();
+    initFmtToggles();
+    initWaveInteraction();
     document.getElementById('storyText').addEventListener('input', updateStats);
     updateStats();
   }
 
-  return {sendToTTS, saveTxt, clearText, speak, stopSpeak, recordTTS, toggleRecord, uploadAudio,
-           applyVoiceChange, playProcessed, downloadProcessed, testVoice, init};
+  return {sendToTTS, saveTxt, clearText, speak, stopSpeak, recordTTS, downloadTTS, toggleRecord, uploadAudio,
+           applyVoiceChange, playSelection, pauseAll, deleteSelection, duplicateSelection, addSilence,
+           undo, clearSelection, downloadProcessed, testVoice, init};
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);
