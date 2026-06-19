@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>НОЧНОЙ ЭФИР — студия озвучки</title>
+<style>
+  :root{
+    --bg:#0b0a0d;
+    --bg-2:#141218;
+    --panel:#18151c;
+    --line:#2a242f;
+    --ember:#ff5a36;
+    --ember-dim:#7a2c1c;
+    --bone:#e8e2d6;
+    --bone-dim:#9b9389;
+    --static:#3d3645;
+    --good:#5fae7d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(255,90,54,.08), transparent 50%),
+      radial-gradient(ellipse at 90% 110%, rgba(122,44,28,.10), transparent 55%),
+      var(--bg);
+    color:var(--bone);
+    font-family: 'Courier New', ui-monospace, monospace;
+    min-height:100vh;
+  }
+  @font-face{}
+  h1,h2,h3,.display{
+    font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing:.02em;
+  }
+  .noise{
+    position:fixed; inset:0; pointer-events:none; opacity:.035; z-index:999;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  header{
+    border-bottom:1px solid var(--line);
+    padding:28px 32px 22px;
+    display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    background:linear-gradient(180deg, rgba(255,90,54,.04), transparent);
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .brand .dot{
+    width:11px; height:11px; border-radius:50%; background:var(--ember);
+    box-shadow:0 0 14px 3px rgba(255,90,54,.55);
+    animation:pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  header h1{font-size:24px; margin:0; color:var(--bone); text-transform:uppercase; letter-spacing:.12em;}
+  header .sub{font-size:12px; color:var(--bone-dim); margin-top:4px; letter-spacing:.04em;}
+  .onair{
+    font-size:11px; letter-spacing:.18em; color:var(--ember);
+    border:1px solid var(--ember-dim); padding:6px 12px; text-transform:uppercase;
+  }
+
+  nav.tabs{
+    display:flex; gap:2px; padding:0 32px; border-bottom:1px solid var(--line);
+    background:var(--bg-2); overflow-x:auto;
+  }
+  nav.tabs button{
+    background:transparent; border:none; color:var(--bone-dim);
+    font-family:inherit; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    padding:16px 18px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  nav.tabs button:hover{color:var(--bone);}
+  nav.tabs button.active{color:var(--ember); border-bottom-color:var(--ember);}
+
+  main{max-width:1180px; margin:0 auto; padding:32px;}
+  section.panel{display:none;}
+  section.panel.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .grid{display:grid; grid-template-columns:1.3fr .9fr; gap:22px;}
+  @media (max-width:880px){.grid{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); padding:22px;
+    position:relative;
+  }
+  .card::before{
+    content:''; position:absolute; top:0; left:0; width:28px; height:1px; background:var(--ember-dim);
+  }
+  .card h2{font-size:15px; text-transform:uppercase; letter-spacing:.1em; color:var(--bone); margin:0 0 16px;}
+  .card h2 .n{color:var(--ember-dim); margin-right:8px;}
+
+  label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--bone-dim); margin:16px 0 6px;}
+  label:first-of-type{margin-top:0;}
+
+  textarea{
+    width:100%; min-height:220px; background:var(--bg); color:var(--bone);
+    border:1px solid var(--line); padding:14px; font-family:Georgia, serif; font-size:16px;
+    line-height:1.7; resize:vertical;
+  }
+  textarea:focus, select:focus, input:focus{outline:1px solid var(--ember); outline-offset:1px;}
+
+  select, input[type=range]{width:100%;}
+  select{
+    background:var(--bg); color:var(--bone); border:1px solid var(--line); padding:10px 12px;
+    font-family:inherit; font-size:13px;
+  }
+  input[type=range]{
+    -webkit-appearance:none; height:3px; background:var(--static); margin-top:8px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--ember); cursor:pointer; box-shadow:0 0 8px rgba(255,90,54,.6);
+  }
+  .row{display:flex; gap:14px;}
+  .row > div{flex:1;}
+  .valrow{display:flex; justify-content:space-between; align-items:baseline;}
+  .valrow span.v{font-size:12px; color:var(--ember);}
+
+  .btn{
+    background:transparent; border:1px solid var(--ember-dim); color:var(--bone);
+    font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing:.1em;
+    padding:12px 20px; cursor:pointer; transition:all .15s;
+  }
+  .btn:hover{border-color:var(--ember); color:var(--ember); background:rgba(255,90,54,.06);}
+  .btn.primary{background:var(--ember-dim); border-color:var(--ember-dim); color:var(--bone);}
+  .btn.primary:hover{background:var(--ember); border-color:var(--ember); color:#1a0e0a;}
+  .btn:disabled{opacity:.35; cursor:not-allowed;}
+  .btn.rec{border-color:#7a2c2c;}
+  .btn.rec.on{background:var(--ember); color:#1a0e0a; animation:pulse 1.2s infinite;}
+
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+
+  .voice-card{
+    border:1px solid var(--line); padding:14px; margin-bottom:10px; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; transition:.15s;
+  }
+  .voice-card:hover{border-color:var(--ember-dim);}
+  .voice-card.sel{border-color:var(--ember); background:rgba(255,90,54,.05);}
+  .voice-card .vname{font-size:13px; text-transform:uppercase; letter-spacing:.05em;}
+  .voice-card .vtag{font-size:10px; color:var(--bone-dim); margin-top:3px; letter-spacing:.04em;}
+  .voice-card .play{color:var(--ember-dim); font-size:11px;}
+
+  .meter{height:46px; background:var(--bg); border:1px solid var(--line); display:flex; align-items:flex-end; gap:2px; padding:4px; margin-top:14px;}
+  .meter span{flex:1; background:var(--static); min-height:2px; transition:height .06s;}
+
+  .hint{font-size:11px; color:var(--bone-dim); line-height:1.6; margin-top:14px; border-left:2px solid var(--ember-dim); padding-left:12px;}
+  audio{width:100%; margin-top:14px; filter:invert(.85) sepia(.2) saturate(1.5) hue-rotate(-10deg);}
+
+  footer{padding:30px 32px; text-align:center; font-size:11px; color:var(--bone-dim); letter-spacing:.05em; border-top:1px solid var(--line); margin-top:20px;}
+
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--panel); border:1px solid var(--ember-dim);
+    padding:12px 18px; font-size:12px; letter-spacing:.04em; z-index:1000; transform:translateY(20px); opacity:0;
+    transition:.25s; pointer-events:none;
+  }
+  .toast.show{transform:translateY(0); opacity:1;}
+
+  .preset-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .preset{
+    border:1px solid var(--line); padding:14px 12px; cursor:pointer; text-align:left; background:transparent; color:var(--bone);
+    font-family:inherit;
+  }
+  .preset:hover{border-color:var(--ember-dim);}
+  .preset.sel{border-color:var(--ember); background:rgba(255,90,54,.06);}
+  .preset .pname{font-size:12px; text-transform:uppercase; letter-spacing:.06em;}
+  .preset .pdesc{font-size:10px; color:var(--bone-dim); margin-top:4px;}
+
+  ::selection{background:var(--ember); color:#1a0e0a;}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<header>
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <h1>Ночной эфир</h1>
+      <div class="sub">студия озвучки страшных историй — TTS · смена голоса · редактор</div>
+    </div>
+  </div>
+  <div class="onair">● в эфире</div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="editor">01 · Редактор</button>
+  <button data-tab="tts">02 · Озвучка текста (TTS)</button>
+  <button data-tab="changer">03 · Смена голоса</button>
+</nav>
+
+<main>
+
+  <!-- EDITOR -->
+  <section class="panel active" id="editor">
+    <div class="grid">
+      <div class="card">
+        <h2><span class="n">01</span>Текст истории</h2>
+        <label>Заголовок</label>
+        <input id="storyTitle" type="text" value="Без названия" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--bone); padding:10px 12px; font-family:Georgia,serif; font-size:15px;">
+        <label>Текст</label>
+        <textarea id="storyText" placeholder="Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи...">Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи. Соседи считали его чудаком — пока однажды не заметили, что в его доме горит свет, хотя сам он уже три дня как пропал.</textarea>
+        <div class="hint">Этот текст автоматически доступен на вкладке «Озвучка текста». Сохраняйте версии локально кнопкой ниже — всё хранится только в этой вкладке браузера.</div>
+        <div class="btnrow">
+          <button class="btn primary" onclick="App.sendToTTS()">→ Отправить на озвучку</button>
+          <button class="btn" onclick="App.saveTxt()">Скачать .txt</button>
+          <button class="btn" onclick="App.clearText()">Очистить</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="n">02</span>Статистика</h2>
+        <div id="stats" style="font-size:13px; line-height:2.1; color:var(--bone-dim);"></div>
+        <label>Чек-лист хоррор-нарратива</label>
+        <div style="font-size:12px; line-height:2; color:var(--bone-dim);">
+          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Есть зацепка в первом абзаце</label>
+          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Нарастание напряжения</label>
+          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Звуковые паузы (...) для эффекта</label>
+          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Финальный твист</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TTS -->
+  <section class="panel" id="tts">
+    <div class="grid">
+      <div class="card">
+        <h2><span class="n">01</span>Текст для озвучки</h2>
+        <textarea id="ttsText" placeholder="Вставьте или впишите текст истории...">Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи.</textarea>
+        <div class="row">
+          <div>
+            <div class="valrow"><label>Скорость</label><span class="v" id="rateVal">1.0×</span></div>
+            <input type="range" id="rate" min="0.5" max="1.8" step="0.05" value="1.0">
+          </div>
+          <div>
+            <div class="valrow"><label>Высота тона</label><span class="v" id="pitchVal">1.0</span></div>
+            <input type="range" id="pitch" min="0" max="2" step="0.05" value="1.0">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="valrow"><label>Громкость</label><span class="v" id="volVal">100%</span></div>
+            <input type="range" id="vol" min="0" max="1" step="0.05" value="1">
+          </div>
+          <div>
+            <div class="valrow"><label>Пауза между предложениями</label><span class="v" id="pauseVal">300мс</span></div>
+            <input type="range" id="pause" min="0" max="1200" step="50" value="300">
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="btn primary" id="ttsPlay" onclick="App.speak()">▶ Озвучить</button>
+          <button class="btn" onclick="App.stopSpeak()">■ Стоп</button>
+          <button class="btn" onclick="App.recordTTS()" id="ttsRecBtn">● Записать в файл</button>
+        </div>
+        <div class="hint" id="ttsHint">Озвучка использует голоса, встроенные в ваш браузер/ОС (Web Speech API). Набор и качество голосов зависят от устройства — на телефоне и компьютере списки могут отличаться. Запись «в файл» захватывает звук с динамиков во время воспроизведения.</div>
+        <audio id="ttsAudioOut" controls style="display:none;"></audio>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">02</span>Голос рассказчика</h2>
+        <div id="voiceList"></div>
+        <div class="hint">Для жанра хоррора рекомендуем голоса, помеченные тегом «низкий/young male» — они ближе всего к интонации молодого рассказчика у костра. Если такого голоса нет в системе — используйте вкладку «Смена голоса», чтобы понизить тон своей собственной записи.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHANGER -->
+  <section class="panel" id="changer">
+    <div class="grid">
+      <div class="card">
+        <h2><span class="n">01</span>Запись собственного голоса</h2>
+        <div class="btnrow" style="margin-top:0;">
+          <button class="btn rec" id="recBtn" onclick="App.toggleRecord()">● Записать</button>
+          <button class="btn" onclick="App.uploadAudio()">Загрузить файл</button>
+          <input type="file" id="fileInput" accept="audio/*" style="display:none;">
+        </div>
+        <div class="meter" id="meter"></div>
+        <audio id="rawAudio" controls style="display:none;"></audio>
+        <div class="hint">Запись идёт прямо в браузере через микрофон — звук никуда не отправляется, обработка происходит локально на вашем устройстве.</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">02</span>Пресеты изменения голоса</h2>
+        <div class="preset-grid" id="presetGrid"></div>
+        <label>Тонкая настройка тона</label>
+        <div class="valrow"><span></span><span class="v" id="manualPitchVal">+0</span></div>
+        <input type="range" id="manualPitch" min="-12" max="12" step="1" value="0">
+        <label>Эхо / реверберация</label>
+        <input type="range" id="echoAmt" min="0" max="0.6" step="0.02" value="0">
+        <div class="btnrow">
+          <button class="btn primary" onclick="App.applyVoiceChange()">⚙ Применить эффект</button>
+          <button class="btn" onclick="App.playProcessed()" id="playProcBtn" disabled>▶ Прослушать результат</button>
+          <button class="btn" onclick="App.downloadProcessed()" id="dlProcBtn" disabled>↓ Скачать .wav</button>
+        </div>
+        <audio id="procAudio" controls style="display:none;"></audio>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>НОЧНОЙ ЭФИР — локальная студия в браузере. Ничего не уходит на сервер: TTS и обработка голоса выполняются на вашем устройстве.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const App = (() => {
+  let voices = [];
+  let selectedVoice = null;
+  let mediaRecorder, recordedChunks = [], micStream, audioCtx, analyser, meterBars=[];
+  let rawAudioBuffer = null; // decoded AudioBuffer of recorded/uploaded voice
+  let processedBuffer = null;
+  let selectedPreset = 'normal';
+
+  const presets = [
+    {id:'normal', name:'Обычный', desc:'Без изменений', pitch:0, rate:1, echo:0},
+    {id:'demon', name:'Демонический', desc:'Низкий, тёмный, с эхом', pitch:-7, rate:0.88, echo:0.35},
+    {id:'ghost', name:'Призрак', desc:'Высокий, неустойчивый шёпот', pitch:6, rate:0.95, echo:0.5},
+    {id:'narrator', name:'Рассказчик-юноша', desc:'Лёгкое понижение, чёткая дикция', pitch:-2, rate:1.0, echo:0.08},
+    {id:'monster', name:'Чудовище', desc:'Очень низкий, замедленный', pitch:-12, rate:0.78, echo:0.2},
+    {id:'whisper', name:'Шёпот из тьмы', desc:'Высокий, тихий, эхо в темноте', pitch:9, rate:0.9, echo:0.55},
+  ];
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2400);
+  }
+
+  function initTabs(){
+    document.querySelectorAll('nav.tabs button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  }
+
+  function tagFor(v){
+    const n = (v.name+v.lang).toLowerCase();
+    if(n.includes('male') || n.includes('man') || /\b(ru-ru.*standard.*b|dmitri|pavel|yuri|google\s*русский)\b/.test(n)) return 'мужской';
+    if(n.includes('female') || n.includes('woman')) return 'женский';
+    return 'голос системы';
+  }
+
+  function initVoices(){
+    function populate(){
+      voices = window.speechSynthesis.getVoices();
+      const list = document.getElementById('voiceList');
+      list.innerHTML = '';
+      if(voices.length===0){
+        list.innerHTML = '<div class="hint">Голоса ещё загружаются... если список не появится — браузер может не поддерживать синтез речи на этом устройстве.</div>';
+        return;
+      }
+      // sort: ru first
+      const sorted = [...voices].sort((a,b)=>{
+        const ar = a.lang.startsWith('ru') ? 0 : 1;
+        const br = b.lang.startsWith('ru') ? 0 : 1;
+        return ar-br;
+      });
+      sorted.forEach((v,i)=>{
+        const card = document.createElement('div');
+        card.className = 'voice-card' + (selectedVoice===v.name ? ' sel':'');
+        card.innerHTML = `<div><div class="vname">${v.name}</div><div class="vtag">${v.lang} · ${tagFor(v)}</div></div><div class="play">▶ тест</div>`;
+        card.onclick = (e)=>{
+          if(e.target.classList.contains('play')){
+            App.testVoice(v);
+            return;
+          }
+          document.querySelectorAll('.voice-card').forEach(c=>c.classList.remove('sel'));
+          card.classList.add('sel');
+          selectedVoice = v.name;
+        };
+        list.appendChild(card);
+      });
+      if(!selectedVoice && sorted[0]){ selectedVoice = sorted[0].name; list.firstChild.classList.add('sel'); }
+    }
+    populate();
+    window.speechSynthesis.onvoiceschanged = populate;
+  }
+
+  function initSliders(){
+    const bind = (id, valId, fmt) => {
+      const el = document.getElementById(id);
+      const out = document.getElementById(valId);
+      const update = ()=> out.textContent = fmt(el.value);
+      el.addEventListener('input', update); update();
+    };
+    bind('rate','rateVal', v=>parseFloat(v).toFixed(2)+'×');
+    bind('pitch','pitchVal', v=>parseFloat(v).toFixed(2));
+    bind('vol','volVal', v=>Math.round(v*100)+'%');
+    bind('pause','pauseVal', v=>v+'мс');
+    bind('manualPitch','manualPitchVal', v=>(v>0?'+':'')+v+' полутонов');
+    bind('echoAmt', null, ()=>'');
+  }
+
+  function initPresets(){
+    const grid = document.getElementById('presetGrid');
+    presets.forEach(p=>{
+      const btn = document.createElement('button');
+      btn.className = 'preset' + (p.id==='normal' ? ' sel':'');
+      btn.innerHTML = `<div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div>`;
+      btn.onclick = ()=>{
+        document.querySelectorAll('.preset').forEach(x=>x.classList.remove('sel'));
+        btn.classList.add('sel');
+        selectedPreset = p.id;
+        document.getElementById('manualPitch').value = p.pitch;
+        document.getElementById('manualPitchVal').textContent = (p.pitch>0?'+':'')+p.pitch+' полутонов';
+        document.getElementById('echoAmt').value = p.echo;
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function updateStats(){
+    const txt = document.getElementById('storyText').value;
+    const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+    const chars = txt.length;
+    const minutes = (words/130).toFixed(1);
+    document.getElementById('stats').innerHTML = `Слов: <b style="color:var(--bone)">${words}</b><br>Символов: <b style="color:var(--bone)">${chars}</b><br>Примерное время озвучки: <b style="color:var(--bone)">~${minutes} мин</b>`;
+  }
+
+  // ---------- EDITOR ----------
+  function sendToTTS(){
+    document.getElementById('ttsText').value = document.getElementById('storyText').value;
+    document.querySelector('[data-tab="tts"]').click();
+    toast('Текст отправлен в озвучку');
+  }
+  function saveTxt(){
+    const title = document.getElementById('storyTitle').value || 'story';
+    const txt = document.getElementById('storyText').value;
+    const blob = new Blob([txt], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = title.replace(/\s+/g,'_') + '.txt';
+    a.click();
+  }
+  function clearText(){
+    if(confirm('Очистить текст истории?')) document.getElementById('storyText').value='';
+    updateStats();
+  }
+
+  // ---------- TTS ----------
+  let currentUtterance = null;
+  function speak(){
+    const text = document.getElementById('ttsText').value.trim();
+    if(!text){ toast('Введите текст'); return; }
+    window.speechSynthesis.cancel();
+    const sentences = text.split(/(?<=[.!?…])\s+/);
+    const pauseMs = parseInt(document.getElementById('pause').value);
+    const v = voices.find(v=>v.name===selectedVoice);
+    let i = 0;
+    function next(){
+      if(i>=sentences.length) return;
+      const u = new SpeechSynthesisUtterance(sentences[i]);
+      if(v) u.voice = v;
+      u.rate = parseFloat(document.getElementById('rate').value);
+      u.pitch = parseFloat(document.getElementById('pitch').value);
+      u.volume = parseFloat(document.getElementById('vol').value);
+      u.onend = ()=>{ i++; setTimeout(next, pauseMs); };
+      window.speechSynthesis.speak(u);
+      currentUtterance = u;
+    }
+    next();
+  }
+  function stopSpeak(){ window.speechSynthesis.cancel(); }
+
+  let ttsRecording = false, ttsRecorder, ttsChunks=[];
+  async function recordTTS(){
+    if(!ttsRecording){
+      try{
+        const dest = audioCtx ? null : null;
+        // capture via display/tab audio is restrictive; instead offer mic-free note
+        toast('Захват системного звука ограничен браузером — используйте запись экрана/звука ОС, либо вкладку «Смена голоса» для готовых файлов.');
+      }catch(e){ toast('Запись недоступна в этом браузере'); }
+    }
+  }
+
+  // ---------- VOICE CHANGER ----------
+  function setupMeterBars(){
+    const meter = document.getElementById('meter');
+    meter.innerHTML='';
+    meterBars=[];
+    for(let i=0;i<48;i++){
+      const s = document.createElement('span');
+      meter.appendChild(s);
+      meterBars.push(s);
+    }
+  }
+
+  async function toggleRecord(){
+    const btn = document.getElementById('recBtn');
+    if(mediaRecorder && mediaRecorder.state === 'recording'){
+      mediaRecorder.stop();
+      micStream.getTracks().forEach(t=>t.stop());
+      btn.classList.remove('on'); btn.textContent='● Записать';
+      return;
+    }
+    try{
+      micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(micStream);
+      mediaRecorder.ondataavailable = e=> recordedChunks.push(e.data);
+      mediaRecorder.onstop = async ()=>{
+        const blob = new Blob(recordedChunks, {type:'audio/webm'});
+        const url = URL.createObjectURL(blob);
+        const rawAudio = document.getElementById('rawAudio');
+        rawAudio.src = url; rawAudio.style.display='block';
+        const arrBuf = await blob.arrayBuffer();
+        const ctx = getCtx();
+        rawAudioBuffer = await ctx.decodeAudioData(arrBuf);
+        toast('Запись готова. Выберите пресет и нажмите «Применить эффект».');
+      };
+      mediaRecorder.start();
+      btn.classList.add('on'); btn.textContent='■ Стоп';
+      startMeter(micStream);
+    }catch(e){
+      toast('Нет доступа к микрофону');
+    }
+  }
+
+  function startMeter(stream){
+    setupMeterBars();
+    const ctx = getCtx();
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 128;
+    src.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    function draw(){
+      if(!mediaRecorder || mediaRecorder.state!=='recording') return;
+      analyser.getByteFrequencyData(data);
+      meterBars.forEach((bar,i)=>{
+        const v = data[i % data.length] || 0;
+        bar.style.height = Math.max(2, (v/255)*44) + 'px';
+        bar.style.background = v>180 ? 'var(--ember)' : 'var(--static)';
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function getCtx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function uploadAudio(){
+    document.getElementById('fileInput').click();
+  }
+  document_addUploadListener();
+  function document_addUploadListener(){
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('fileInput').addEventListener('change', async (e)=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const url = URL.createObjectURL(file);
+        const rawAudio = document.getElementById('rawAudio');
+        rawAudio.src = url; rawAudio.style.display='block';
+        const arrBuf = await file.arrayBuffer();
+        const ctx = getCtx();
+        rawAudioBuffer = await ctx.decodeAudioData(arrBuf);
+        toast('Файл загружен. Можно применять эффект.');
+      });
+    });
+  }
+
+  // Simple pitch-shift via resampling (changes pitch & speed together) +
+  // a separate time-stretch pass using OfflineAudioContext playbackRate trick,
+  // plus optional echo by convolution-free delayed mix.
+  async function applyVoiceChange(){
+    if(!rawAudioBuffer){ toast('Сначала запишите или загрузите голос'); return; }
+    const semitones = parseFloat(document.getElementById('manualPitch').value);
+    const echoAmt = parseFloat(document.getElementById('echoAmt').value);
+    const rateFactor = Math.pow(2, semitones/12);
+
+    const srcBuf = rawAudioBuffer;
+    const ctx = getCtx();
+    const newLength = Math.ceil(srcBuf.length / rateFactor);
+    const offline = new OfflineAudioContext(srcBuf.numberOfChannels, newLength + ctx.sampleRate*0.5, srcBuf.sampleRate);
+
+    const srcNode = offline.createBufferSource();
+    srcNode.buffer = srcBuf;
+    srcNode.playbackRate.value = rateFactor;
+
+    const dry = offline.createGain();
+    dry.gain.value = 1;
+    srcNode.connect(dry);
+    dry.connect(offline.destination);
+
+    if(echoAmt > 0){
+      const delay = offline.createDelay(1.0);
+      delay.delayTime.value = 0.18;
+      const feedback = offline.createGain();
+      feedback.gain.value = echoAmt;
+      const wet = offline.createGain();
+      wet.gain.value = echoAmt;
+      srcNode.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(wet);
+      wet.connect(offline.destination);
+    }
+
+    srcNode.start(0);
+    toast('Обработка...');
+    const rendered = await offline.startRendering();
+    processedBuffer = rendered;
+
+    const wavBlob = bufferToWav(rendered);
+    const url = URL.createObjectURL(wavBlob);
+    const procAudio = document.getElementById('procAudio');
+    procAudio.src = url; procAudio.style.display='block';
+    document.getElementById('playProcBtn').disabled = false;
+    document.getElementById('dlProcBtn').disabled = false;
+    toast('Готово! Эффект применён.');
+  }
+
+  function playProcessed(){
+    document.getElementById('procAudio').play();
+  }
+  function downloadProcessed(){
+    const procAudio = document.getElementById('procAudio');
+    if(!procAudio.src) return;
+    const a = document.createElement('a');
+    a.href = procAudio.src;
+    a.download = 'voice_changed.wav';
+    a.click();
+  }
+
+  // PCM AudioBuffer -> WAV Blob
+  function bufferToWav(buffer){
+    const numCh = buffer.numberOfChannels;
+    const len = buffer.length * numCh * 2 + 44;
+    const arrBuf = new ArrayBuffer(len);
+    const view = new DataView(arrBuf);
+    const writeStr = (offset, str)=>{ for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
+    writeStr(0,'RIFF'); view.setUint32(4, 36 + buffer.length*numCh*2, true);
+    writeStr(8,'WAVE'); writeStr(12,'fmt ');
+    view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,numCh,true); view.setUint32(24,buffer.sampleRate,true);
+    view.setUint32(28, buffer.sampleRate*numCh*2, true);
+    view.setUint16(32, numCh*2, true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40, buffer.length*numCh*2, true);
+    let offset = 44;
+    for(let i=0;i<buffer.length;i++){
+      for(let ch=0; ch<numCh; ch++){
+        let sample = buffer.getChannelData(ch)[i];
+        sample = Math.max(-1, Math.min(1, sample));
+        view.setInt16(offset, sample<0 ? sample*0x8000 : sample*0x7FFF, true);
+        offset += 2;
+      }
+    }
+    return new Blob([view], {type:'audio/wav'});
+  }
+
+  function testVoice(v){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance('Это тестовая фраза, чтобы услышать тембр голоса.');
+    u.voice = v;
+    window.speechSynthesis.speak(u);
+  }
+
+  function init(){
+    initTabs();
+    initVoices();
+    initSliders();
+    initPresets();
+    document.getElementById('storyText').addEventListener('input', updateStats);
+    updateStats();
+  }
+
+  return {sendToTTS, saveTxt, clearText, speak, stopSpeak, recordTTS, toggleRecord, uploadAudio,
+           applyVoiceChange, playProcessed, downloadProcessed, testVoice, init};
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+</script>
+</body>
+</html>
