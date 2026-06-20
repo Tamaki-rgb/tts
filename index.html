@@ -379,4 +379,802 @@
 
 </main>
 
-<footer>НОЧНОЙ ЭФИР — локальная студия в браузере. Ничего не уходит на с
+<footer>НОЧНОЙ ЭФИР — локальная студия в браузере. Ничего не уходит на сервер: TTS и обработка голоса выполняются на вашем устройстве.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const App = (() => {
+  let voices = [];
+  let selectedVoice = null;
+  let mediaRecorder, recordedChunks = [], micStream, audioCtx, analyser, meterBars=[];
+  let history = [];       // undo stack of AudioBuffers
+  let currentBuffer = null; // the working AudioBuffer shown on timeline
+  let selStart = null, selEnd = null; // in seconds
+  let isDragging = false, dragStartX = 0;
+  let playingNode = null;
+  let ttsFmt = 'wav', changerFmt = 'wav';
+  let tabStream = null, tabRecorder = null, tabChunks = [], ttsRecordedBlob = null;
+
+  const presets = [
+    {id:'normal', name:'Обычный', desc:'Без изменений', pitch:0, echo:0, lowpass:0, highpass:0, distort:0},
+    {id:'demon', name:'Демонический', desc:'Низкий, тёмный, с эхом', pitch:-7, echo:0.35, lowpass:30, highpass:0, distort:20},
+    {id:'ghost', name:'Призрак', desc:'Высокий, неустойчивый шёпот', pitch:6, echo:0.5, lowpass:0, highpass:20, distort:0},
+    {id:'narrator', name:'Рассказчик-юноша', desc:'Лёгкое понижение, чёткая дикция', pitch:-2, echo:0.08, lowpass:0, highpass:0, distort:0},
+    {id:'monster', name:'Чудовище', desc:'Очень низкий, рычащий', pitch:-12, echo:0.2, lowpass:45, highpass:0, distort:55},
+    {id:'whisper', name:'Шёпот из тьмы', desc:'Высокий, тихий, эхо в темноте', pitch:9, echo:0.55, lowpass:0, highpass:15, distort:0},
+    {id:'telephone', name:'По телефону', desc:'Узкая полоса, как звонок издалека', pitch:0, echo:0.05, lowpass:0, highpass:55, distort:10},
+    {id:'underground', name:'Из-под земли', desc:'Глухо, давяще, низко', pitch:-4, echo:0.25, lowpass:60, highpass:0, distort:15},
+  ];
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  function initTabs(){
+    document.querySelectorAll('nav.tabs button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        if(btn.dataset.tab === 'changer') drawWave();
+      });
+    });
+  }
+
+  function initFmtToggles(){
+    document.querySelectorAll('#ttsFmtToggle button').forEach(b=>{
+      b.onclick = ()=>{
+        document.querySelectorAll('#ttsFmtToggle button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); ttsFmt = b.dataset.fmt;
+      };
+    });
+    document.querySelectorAll('#changerFmtToggle button').forEach(b=>{
+      b.onclick = ()=>{
+        document.querySelectorAll('#changerFmtToggle button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); changerFmt = b.dataset.fmt;
+      };
+    });
+  }
+
+  function tagFor(v){
+    const n = (v.name+v.lang).toLowerCase();
+    if(n.includes('male') || n.includes('man')) return 'мужской';
+    if(n.includes('female') || n.includes('woman')) return 'женский';
+    return 'голос системы';
+  }
+
+  function initVoices(){
+    function populate(){
+      voices = window.speechSynthesis.getVoices();
+      const list = document.getElementById('voiceList');
+      list.innerHTML = '';
+      if(voices.length===0){
+        list.innerHTML = '<div class="hint">Голоса ещё загружаются... если список не появится — браузер может не поддерживать синтез речи на этом устройстве.</div>';
+        return;
+      }
+      const sorted = [...voices].sort((a,b)=> (a.lang.startsWith('ru')?0:1) - (b.lang.startsWith('ru')?0:1));
+      sorted.forEach(v=>{
+        const card = document.createElement('div');
+        card.className = 'voice-card' + (selectedVoice===v.name ? ' sel':'');
+        card.innerHTML = `<div><div class="vname">${v.name}</div><div class="vtag">${v.lang} · ${tagFor(v)}</div></div><div class="play">▶ тест</div>`;
+        card.onclick = (e)=>{
+          if(e.target.classList.contains('play')){ App.testVoice(v); return; }
+          document.querySelectorAll('.voice-card').forEach(c=>c.classList.remove('sel'));
+          card.classList.add('sel');
+          selectedVoice = v.name;
+        };
+        list.appendChild(card);
+      });
+      if(!selectedVoice && sorted[0]){ selectedVoice = sorted[0].name; list.firstChild.classList.add('sel'); }
+    }
+    populate();
+    window.speechSynthesis.onvoiceschanged = populate;
+  }
+
+  function initSliders(){
+    const bind = (id, valId, fmt) => {
+      const el = document.getElementById(id);
+      const out = valId ? document.getElementById(valId) : null;
+      const update = ()=> { if(out) out.textContent = fmt(el.value); };
+      el.addEventListener('input', update); update();
+    };
+    bind('rate','rateVal', v=>parseFloat(v).toFixed(2)+'×');
+    bind('pitch','pitchVal', v=>parseFloat(v).toFixed(2));
+    bind('vol','volVal', v=>Math.round(v*100)+'%');
+    bind('pause','pauseVal', v=>v+'мс');
+    bind('manualPitch','manualPitchVal', v=>(v>0?'+':'')+v+' полутонов');
+    bind('gainAmt','gainVal', v=>Math.round(v*100)+'%');
+    bind('echoAmt','echoVal', v=>Math.round(v*100)+'%');
+    bind('lowpassAmt','lowpassVal', v=> v=='0' ? 'выкл' : Math.round(v)+'%');
+    bind('highpassAmt','highpassVal', v=> v=='0' ? 'выкл' : Math.round(v)+'%');
+    bind('distortAmt','distortVal', v=> v=='0' ? '0%' : Math.round(v)+'%');
+  }
+
+  function initPresets(){
+    const grid = document.getElementById('presetGrid');
+    presets.forEach(p=>{
+      const btn = document.createElement('button');
+      btn.className = 'preset' + (p.id==='normal' ? ' sel':'');
+      btn.innerHTML = `<div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div>`;
+      btn.onclick = ()=>{
+        document.querySelectorAll('.preset').forEach(x=>x.classList.remove('sel'));
+        btn.classList.add('sel');
+        const setSlider = (id, valId, val, fmt)=>{
+          document.getElementById(id).value = val;
+          document.getElementById(valId).textContent = fmt(val);
+        };
+        setSlider('manualPitch','manualPitchVal', p.pitch, v=>(v>0?'+':'')+v+' полутонов');
+        setSlider('echoAmt','echoVal', p.echo, v=>Math.round(v*100)+'%');
+        setSlider('lowpassAmt','lowpassVal', p.lowpass, v=> v=='0'?'выкл':Math.round(v)+'%');
+        setSlider('highpassAmt','highpassVal', p.highpass, v=> v=='0'?'выкл':Math.round(v)+'%');
+        setSlider('distortAmt','distortVal', p.distort, v=> v=='0'?'0%':Math.round(v)+'%');
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function updateStats(){
+    const txt = document.getElementById('storyText').value;
+    const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+    const chars = txt.length;
+    const minutes = (words/130).toFixed(1);
+    document.getElementById('stats').innerHTML = `Слов: <b style="color:var(--bone)">${words}</b><br>Символов: <b style="color:var(--bone)">${chars}</b><br>Примерное время озвучки: <b style="color:var(--bone)">~${minutes} мин</b>`;
+  }
+
+  // ---------- EDITOR ----------
+  function sendToTTS(){
+    document.getElementById('ttsText').value = document.getElementById('storyText').value;
+    document.querySelector('[data-tab="tts"]').click();
+    toast('Текст отправлен в озвучку');
+  }
+  function saveTxt(){
+    const title = document.getElementById('storyTitle').value || 'story';
+    const txt = document.getElementById('storyText').value;
+    const blob = new Blob([txt], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = title.replace(/\s+/g,'_') + '.txt';
+    a.click();
+  }
+  function clearText(){
+    if(confirm('Очистить текст истории?')) document.getElementById('storyText').value='';
+    updateStats();
+  }
+
+  // ---------- TTS ----------
+  function speak(){
+    const text = document.getElementById('ttsText').value.trim();
+    if(!text){ toast('Введите текст'); return; }
+    window.speechSynthesis.cancel();
+    const sentences = text.split(/(?<=[.!?…])\s+/);
+    const pauseMs = parseInt(document.getElementById('pause').value);
+    const v = voices.find(v=>v.name===selectedVoice);
+    let i = 0;
+    function next(){
+      if(i>=sentences.length){
+        if(tabRecorder && tabRecorder.state==='recording') setTimeout(()=>tabRecorder.stop(), 400);
+        return;
+      }
+      const u = new SpeechSynthesisUtterance(sentences[i]);
+      if(v) u.voice = v;
+      u.rate = parseFloat(document.getElementById('rate').value);
+      u.pitch = parseFloat(document.getElementById('pitch').value);
+      u.volume = parseFloat(document.getElementById('vol').value);
+      u.onend = ()=>{ i++; setTimeout(next, pauseMs); };
+      window.speechSynthesis.speak(u);
+    }
+    next();
+  }
+  function stopSpeak(){ window.speechSynthesis.cancel(); }
+
+  async function recordTTS(){
+    try{
+      tabStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
+      const audioTracks = tabStream.getAudioTracks();
+      if(audioTracks.length===0){
+        toast('Звук вкладки не выбран — отметьте галочку «Поделиться звуком» в окне выбора');
+        tabStream.getTracks().forEach(t=>t.stop());
+        return;
+      }
+      tabChunks = [];
+      tabRecorder = new MediaRecorder(tabStream);
+      tabRecorder.ondataavailable = e=> tabChunks.push(e.data);
+      tabRecorder.onstop = ()=>{
+        ttsRecordedBlob = new Blob(tabChunks, {type:'audio/webm'});
+        const url = URL.createObjectURL(ttsRecordedBlob);
+        const out = document.getElementById('ttsAudioOut');
+        out.src = url; out.style.display='block';
+        document.getElementById('ttsDlRow').style.display='flex';
+        tabStream.getTracks().forEach(t=>t.stop());
+        toast('Запись готова');
+      };
+      tabRecorder.start();
+      toast('Идёт запись вкладки — теперь нажмите «Озвучить»');
+    }catch(e){
+      toast('Захват вкладки недоступен в этом браузере/устройстве');
+    }
+  }
+
+  async function downloadTTS(){
+    if(!ttsRecordedBlob){ toast('Сначала запишите озвучку'); return; }
+    if(ttsFmt === 'wav'){
+      const arrBuf = await ttsRecordedBlob.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      triggerDownload(bufferToWav(buf), 'tts_record.wav');
+    } else {
+      const arrBuf = await ttsRecordedBlob.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      triggerDownload(bufferToMp3(buf), 'tts_record.mp3');
+    }
+  }
+
+  // ---------- VOICE CHANGER: recording ----------
+  function setupMeterBars(){
+    const meter = document.getElementById('meter');
+    meter.innerHTML=''; meterBars=[];
+    for(let i=0;i<48;i++){ const s=document.createElement('span'); meter.appendChild(s); meterBars.push(s); }
+  }
+
+  async function toggleRecord(){
+    const btn = document.getElementById('recBtn');
+    const pauseBtn = document.getElementById('pauseRecBtn');
+    if(mediaRecorder && mediaRecorder.state !== 'inactive'){
+      mediaRecorder.stop();
+      micStream.getTracks().forEach(t=>t.stop());
+      btn.classList.remove('on'); btn.textContent='● Записать';
+      pauseBtn.disabled = true; pauseBtn.textContent = '⏸ Пауза';
+      return;
+    }
+    try{
+      micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(micStream);
+      mediaRecorder.ondataavailable = e=> recordedChunks.push(e.data);
+      mediaRecorder.onstop = async ()=>{
+        const blob = new Blob(recordedChunks, {type:'audio/webm'});
+        const arrBuf = await blob.arrayBuffer();
+        const ctx = getCtx();
+        const buf = await ctx.decodeAudioData(arrBuf);
+        setBuffer(buf, true);
+        toast('Запись готова — отредактируйте на таймлайне');
+      };
+      mediaRecorder.start();
+      btn.classList.add('on'); btn.textContent='■ Стоп';
+      pauseBtn.disabled = false; pauseBtn.textContent = '⏸ Пауза';
+      startMeter(micStream);
+    }catch(e){ toast('Нет доступа к микрофону'); }
+  }
+
+  function togglePauseRecord(){
+    if(!mediaRecorder) return;
+    const pauseBtn = document.getElementById('pauseRecBtn');
+    if(mediaRecorder.state === 'recording'){
+      mediaRecorder.pause();
+      pauseBtn.textContent = '● Продолжить';
+      toast('Запись на паузе');
+    } else if(mediaRecorder.state === 'paused'){
+      mediaRecorder.resume();
+      pauseBtn.textContent = '⏸ Пауза';
+      startMeter(micStream);
+      toast('Запись продолжена');
+    }
+  }
+
+  function startMeter(stream){
+    setupMeterBars();
+    const ctx = getCtx();
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 128;
+    src.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    function draw(){
+      if(!mediaRecorder || mediaRecorder.state!=='recording') return;
+      analyser.getByteFrequencyData(data);
+      meterBars.forEach((bar,i)=>{
+        const v = data[i % data.length] || 0;
+        bar.style.height = Math.max(2,(v/255)*44)+'px';
+        bar.style.background = v>180 ? 'var(--ember)' : 'var(--static)';
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function getCtx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function uploadAudio(){ document.getElementById('fileInput').click(); }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('fileInput').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const arrBuf = await file.arrayBuffer();
+      const ctx = getCtx();
+      const buf = await ctx.decodeAudioData(arrBuf);
+      setBuffer(buf, true);
+      toast('Файл загружен — отредактируйте на таймлайне');
+    });
+  });
+
+  // ---------- TIMELINE / WAVEFORM EDITOR ----------
+  function setBuffer(buf, resetHistory){
+    if(resetHistory) history = [];
+    if(currentBuffer) history.push(currentBuffer);
+    currentBuffer = buf;
+    selStart = null; selEnd = null;
+    document.getElementById('undoBtn').disabled = history.length===0;
+    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
+    document.getElementById('waveEmpty').style.display = 'none';
+    document.getElementById('seekBar').value = 0;
+    document.getElementById('playhead').style.display = 'none';
+    document.getElementById('seekTime').textContent = '0:00';
+    document.getElementById('seekTotal').textContent = fmtTime(buf.duration);
+    drawWave();
+  }
+
+  function undo(){
+    if(history.length===0) return;
+    currentBuffer = history.pop();
+    selStart = null; selEnd = null;
+    document.getElementById('undoBtn').disabled = history.length===0;
+    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
+    drawWave();
+    toast('Отменено');
+  }
+
+  function fmtTime(s){
+    if(!isFinite(s)) s=0;
+    const m = Math.floor(s/60), sec = Math.floor(s%60);
+    return m+':'+String(sec).padStart(2,'0');
+  }
+
+  function drawWave(){
+    const canvas = document.getElementById('waveCanvas');
+    const wrap = document.getElementById('waveWrap');
+    if(!currentBuffer){ document.getElementById('waveEmpty').style.display='flex'; return; }
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    canvas.width = w * devicePixelRatio; canvas.height = h * devicePixelRatio;
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx.clearRect(0,0,w,h);
+    const data = currentBuffer.getChannelData(0);
+    const step = Math.ceil(data.length / w);
+    const mid = h/2;
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ember-dim').trim() || '#7a2c1c';
+    for(let x=0;x<w;x++){
+      let min=1, max=-1;
+      for(let j=0;j<step;j++){
+        const idx = x*step+j;
+        if(idx>=data.length) break;
+        const v = data[idx];
+        if(v<min) min=v; if(v>max) max=v;
+      }
+      const y1 = mid + min*mid*0.92;
+      const y2 = mid + max*mid*0.92;
+      ctx.fillRect(x, y1, 1, Math.max(1,y2-y1));
+    }
+    document.getElementById('timeTotal').textContent = fmtTime(currentBuffer.duration);
+    updateSelOverlay();
+  }
+
+  function pxToSec(px){
+    const wrap = document.getElementById('waveWrap');
+    const ratio = px / wrap.clientWidth;
+    return Math.max(0, Math.min(currentBuffer.duration, ratio * currentBuffer.duration));
+  }
+  function secToPx(sec){
+    const wrap = document.getElementById('waveWrap');
+    return (sec/currentBuffer.duration) * wrap.clientWidth;
+  }
+
+  function updateSelOverlay(){
+    const ov = document.getElementById('selOverlay');
+    if(selStart===null || selEnd===null || !currentBuffer){ ov.style.display='none'; document.getElementById('timeStart').textContent = fmtTime(0); return; }
+    const a = Math.min(selStart, selEnd), b = Math.max(selStart, selEnd);
+    ov.style.display='block';
+    ov.style.left = secToPx(a)+'px';
+    ov.style.width = (secToPx(b)-secToPx(a))+'px';
+    document.getElementById('timeStart').textContent = fmtTime(a)+' – '+fmtTime(b);
+  }
+
+  function initWaveInteraction(){
+    const wrap = document.getElementById('waveWrap');
+    wrap.addEventListener('pointerdown', (e)=>{
+      if(!currentBuffer) return;
+      isDragging = true;
+      const rect = wrap.getBoundingClientRect();
+      dragStartX = e.clientX - rect.left;
+      selStart = pxToSec(dragStartX); selEnd = selStart;
+      updateSelOverlay();
+    });
+    wrap.addEventListener('pointermove', (e)=>{
+      if(!isDragging || !currentBuffer) return;
+      const rect = wrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      selEnd = pxToSec(x);
+      updateSelOverlay();
+    });
+    window.addEventListener('pointerup', ()=> isDragging=false);
+    window.addEventListener('resize', drawWave);
+  }
+
+  function clearSelection(){ selStart=null; selEnd=null; updateSelOverlay(); }
+
+  function getSelRange(){
+    if(selStart===null || selEnd===null || Math.abs(selEnd-selStart) < 0.02) return null;
+    return [Math.min(selStart,selEnd), Math.max(selStart,selEnd)];
+  }
+
+  function sliceBuffer(buf, startSec, endSec){
+    const ctx = getCtx();
+    const sr = buf.sampleRate;
+    const s = Math.floor(startSec*sr), e = Math.floor(endSec*sr);
+    const len = e-s;
+    const out = ctx.createBuffer(buf.numberOfChannels, len, sr);
+    for(let ch=0; ch<buf.numberOfChannels; ch++){
+      out.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+    }
+    return out;
+  }
+
+  function concatBuffers(buffers){
+    const ctx = getCtx();
+    const numCh = buffers[0].numberOfChannels;
+    const sr = buffers[0].sampleRate;
+    const totalLen = buffers.reduce((a,b)=>a+b.length,0);
+    const out = ctx.createBuffer(numCh, totalLen, sr);
+    for(let ch=0; ch<numCh; ch++){
+      let offset = 0;
+      const outData = out.getChannelData(ch);
+      buffers.forEach(b=>{
+        outData.set(b.getChannelData(Math.min(ch,b.numberOfChannels-1)), offset);
+        offset += b.length;
+      });
+    }
+    return out;
+  }
+
+  function deleteSelection(){
+    const range = getSelRange();
+    if(!range){ toast('Сначала выделите участок на волне'); return; }
+    const [a,b] = range;
+    const parts = [];
+    if(a>0) parts.push(sliceBuffer(currentBuffer, 0, a));
+    if(b<currentBuffer.duration) parts.push(sliceBuffer(currentBuffer, b, currentBuffer.duration));
+    const result = parts.length ? concatBuffers(parts) : sliceBuffer(currentBuffer,0,0.01);
+    setBuffer(result, false);
+    toast('Участок удалён');
+  }
+
+  function duplicateSelection(){
+    const range = getSelRange();
+    if(!range){ toast('Сначала выделите участок для повтора'); return; }
+    const [a,b] = range;
+    const piece = sliceBuffer(currentBuffer, a, b);
+    const parts = [sliceBuffer(currentBuffer,0,b), piece, sliceBuffer(currentBuffer,b,currentBuffer.duration)];
+    const result = concatBuffers(parts);
+    setBuffer(result, false);
+    toast('Участок продублирован — запись удлинена');
+  }
+
+  function addSilence(){
+    const ctx = getCtx();
+    const point = (selEnd!==null) ? Math.max(selStart,selEnd) : (currentBuffer ? currentBuffer.duration : 0);
+    if(!currentBuffer){ toast('Сначала запишите голос'); return; }
+    const silence = ctx.createBuffer(currentBuffer.numberOfChannels, Math.floor(1*currentBuffer.sampleRate), currentBuffer.sampleRate);
+    const parts = [sliceBuffer(currentBuffer,0,point), silence, sliceBuffer(currentBuffer,point,currentBuffer.duration)];
+    setBuffer(concatBuffers(parts), false);
+    toast('Добавлена секунда тишины');
+  }
+
+  function makeDistortionCurve(amount){
+    const k = amount * 2;
+    const n = 44100;
+    const curve = new Float32Array(n);
+    for(let i=0;i<n;i++){
+      const x = i*2/n - 1;
+      curve[i] = (1+k) * x / (1 + k*Math.abs(x));
+    }
+    return curve;
+  }
+
+  async function applyVoiceChange(){
+    if(!currentBuffer){ toast('Сначала запишите или загрузите голос'); return; }
+    const semitones = parseFloat(document.getElementById('manualPitch').value);
+    const echoAmt = parseFloat(document.getElementById('echoAmt').value);
+    const gainAmt = parseFloat(document.getElementById('gainAmt').value);
+    const lowpassAmt = parseFloat(document.getElementById('lowpassAmt').value);
+    const highpassAmt = parseFloat(document.getElementById('highpassAmt').value);
+    const distortAmt = parseFloat(document.getElementById('distortAmt').value);
+    const rateFactor = Math.pow(2, semitones/12);
+    const range = getSelRange();
+
+    async function processPiece(buf){
+      const ctx = getCtx();
+      const newLength = Math.ceil(buf.length / rateFactor);
+      const offline = new OfflineAudioContext(buf.numberOfChannels, newLength + ctx.sampleRate*0.5, buf.sampleRate);
+      const srcNode = offline.createBufferSource();
+      srcNode.buffer = buf;
+      srcNode.playbackRate.value = rateFactor;
+
+      let chain = srcNode;
+
+      if(distortAmt > 0){
+        const shaper = offline.createWaveShaper();
+        shaper.curve = makeDistortionCurve(distortAmt/8);
+        shaper.oversample = '2x';
+        chain.connect(shaper); chain = shaper;
+      }
+      if(lowpassAmt > 0){
+        const lp = offline.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 8000 - (lowpassAmt/100)*7200; // higher slider = more muffled
+        chain.connect(lp); chain = lp;
+      }
+      if(highpassAmt > 0){
+        const hp = offline.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = (highpassAmt/100) * 2200;
+        chain.connect(hp); chain = hp;
+      }
+
+      const gainNode = offline.createGain();
+      gainNode.gain.value = gainAmt;
+      chain.connect(gainNode);
+      gainNode.connect(offline.destination);
+
+      if(echoAmt > 0){
+        const delay = offline.createDelay(1.0); delay.delayTime.value = 0.18;
+        const feedback = offline.createGain(); feedback.gain.value = echoAmt;
+        const wet = offline.createGain(); wet.gain.value = echoAmt;
+        chain.connect(delay); delay.connect(feedback); feedback.connect(delay);
+        delay.connect(wet); wet.connect(offline.destination);
+      }
+      srcNode.start(0);
+      return await offline.startRendering();
+    }
+
+    toast('Обработка...');
+    if(range){
+      const [a,b] = range;
+      const before = a>0 ? sliceBuffer(currentBuffer,0,a) : null;
+      const mid = sliceBuffer(currentBuffer,a,b);
+      const after = b<currentBuffer.duration ? sliceBuffer(currentBuffer,b,currentBuffer.duration) : null;
+      const processedMid = await processPiece(mid);
+      const parts = [before, processedMid, after].filter(Boolean);
+      setBuffer(concatBuffers(parts), false);
+    } else {
+      const processed = await processPiece(currentBuffer);
+      setBuffer(processed, false);
+    }
+    toast('Эффект применён');
+  }
+
+  function applyGainEnvelope(buf, range, fn){
+    // fn(t01) returns gain multiplier 0..1 at relative position t01 within range
+    const ctx = getCtx();
+    const out = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+    const [a,b] = range || [0, buf.duration];
+    const sr = buf.sampleRate;
+    const startSample = Math.floor(a*sr), endSample = Math.floor(b*sr);
+    for(let ch=0; ch<buf.numberOfChannels; ch++){
+      const inD = buf.getChannelData(ch), outD = out.getChannelData(ch);
+      outD.set(inD);
+      for(let i=startSample;i<endSample;i++){
+        const t01 = (i-startSample)/(endSample-startSample);
+        outD[i] = inD[i] * fn(t01);
+      }
+    }
+    return out;
+  }
+
+  function fadeIn(){
+    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
+    const range = getSelRange() || [0, currentBuffer.duration];
+    setBuffer(applyGainEnvelope(currentBuffer, range, t=>t), false);
+    toast('Плавное появление применено');
+  }
+  function fadeOut(){
+    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
+    const range = getSelRange() || [0, currentBuffer.duration];
+    setBuffer(applyGainEnvelope(currentBuffer, range, t=>1-t), false);
+    toast('Плавное затухание применено');
+  }
+  function normalize(){
+    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
+    const ctx = getCtx();
+    const buf = currentBuffer;
+    let peak = 0;
+    for(let ch=0; ch<buf.numberOfChannels; ch++){
+      const d = buf.getChannelData(ch);
+      for(let i=0;i<d.length;i++) peak = Math.max(peak, Math.abs(d[i]));
+    }
+    if(peak === 0){ toast('Тишина — нормализовать нечего'); return; }
+    const mult = 0.97 / peak;
+    const out = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+    for(let ch=0; ch<buf.numberOfChannels; ch++){
+      const inD = buf.getChannelData(ch), outD = out.getChannelData(ch);
+      for(let i=0;i<inD.length;i++) outD[i] = inD[i]*mult;
+    }
+    setBuffer(out, false);
+    toast('Громкость нормализована');
+  }
+
+  let playStartedAt = 0, playOffsetSec = 0, playRafId = null, isSeeking = false;
+
+  function playSelection(){
+    if(!currentBuffer) return;
+    pauseAll();
+    const ctx = getCtx();
+    const range = getSelRange();
+    let startSec, endSec;
+    if(range){ startSec = range[0]; endSec = range[1]; }
+    else {
+      startSec = (parseFloat(document.getElementById('seekBar').value)/1000) * currentBuffer.duration;
+      endSec = currentBuffer.duration;
+    }
+    const buf = sliceBuffer(currentBuffer, startSec, endSec);
+    playingNode = ctx.createBufferSource();
+    playingNode.buffer = buf;
+    playingNode.connect(ctx.destination);
+    playOffsetSec = startSec;
+    playStartedAt = ctx.currentTime;
+    playingNode.start();
+    playingNode.onended = ()=>{ cancelAnimationFrame(playRafId); };
+    animatePlayhead();
+  }
+
+  function animatePlayhead(){
+    if(!playingNode || !currentBuffer) return;
+    const ctx = getCtx();
+    const elapsed = ctx.currentTime - playStartedAt;
+    const pos = Math.min(currentBuffer.duration, playOffsetSec + elapsed);
+    setPlayheadPosition(pos);
+    if(pos < currentBuffer.duration){
+      playRafId = requestAnimationFrame(animatePlayhead);
+    }
+  }
+
+  function setPlayheadPosition(sec){
+    const ph = document.getElementById('playhead');
+    ph.style.display = 'block';
+    ph.style.left = secToPx(sec)+'px';
+    const seekBar = document.getElementById('seekBar');
+    if(!isSeeking) seekBar.value = Math.round((sec/currentBuffer.duration)*1000);
+    document.getElementById('seekTime').textContent = fmtTime(sec);
+    document.getElementById('seekTotal').textContent = fmtTime(currentBuffer.duration);
+  }
+
+  function pauseAll(){
+    if(playingNode){ try{playingNode.stop();}catch(e){} playingNode=null; }
+    cancelAnimationFrame(playRafId);
+  }
+
+  function initSeekBar(){
+    const seekBar = document.getElementById('seekBar');
+    seekBar.addEventListener('pointerdown', ()=> isSeeking = true);
+    seekBar.addEventListener('input', ()=>{
+      if(!currentBuffer) return;
+      const sec = (parseFloat(seekBar.value)/1000) * currentBuffer.duration;
+      const ph = document.getElementById('playhead');
+      ph.style.display='block'; ph.style.left = secToPx(sec)+'px';
+      document.getElementById('seekTime').textContent = fmtTime(sec);
+      document.getElementById('seekTotal').textContent = fmtTime(currentBuffer.duration);
+    });
+    seekBar.addEventListener('pointerup', ()=>{ isSeeking = false; });
+    // click on waveform without drag = move seek bar + playhead
+    const wrap = document.getElementById('waveWrap');
+    wrap.addEventListener('click', (e)=>{
+      if(!currentBuffer) return;
+      const moved = Math.abs((selEnd||0) - (selStart||0));
+      if(moved > 0.05) return; // was a drag-selection, ignore click-seek
+      const rect = wrap.getBoundingClientRect();
+      const sec = pxToSec(e.clientX - rect.left);
+      seekBar.value = Math.round((sec/currentBuffer.duration)*1000);
+      setPlayheadPosition(sec);
+    });
+  }
+
+  function triggerDownload(blob, filename){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  function downloadProcessed(){
+    if(!currentBuffer){ toast('Нечего скачивать'); return; }
+    if(changerFmt === 'wav') triggerDownload(bufferToWav(currentBuffer), 'voice_changed.wav');
+    else triggerDownload(bufferToMp3(currentBuffer), 'voice_changed.mp3');
+  }
+
+  // PCM AudioBuffer -> WAV Blob
+  function bufferToWav(buffer){
+    const numCh = buffer.numberOfChannels;
+    const len = buffer.length * numCh * 2 + 44;
+    const arrBuf = new ArrayBuffer(len);
+    const view = new DataView(arrBuf);
+    const writeStr = (offset, str)=>{ for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
+    writeStr(0,'RIFF'); view.setUint32(4, 36 + buffer.length*numCh*2, true);
+    writeStr(8,'WAVE'); writeStr(12,'fmt ');
+    view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,numCh,true); view.setUint32(24,buffer.sampleRate,true);
+    view.setUint32(28, buffer.sampleRate*numCh*2, true);
+    view.setUint16(32, numCh*2, true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40, buffer.length*numCh*2, true);
+    let offset = 44;
+    for(let i=0;i<buffer.length;i++){
+      for(let ch=0; ch<numCh; ch++){
+        let sample = buffer.getChannelData(ch)[i];
+        sample = Math.max(-1, Math.min(1, sample));
+        view.setInt16(offset, sample<0 ? sample*0x8000 : sample*0x7FFF, true);
+        offset += 2;
+      }
+    }
+    return new Blob([view], {type:'audio/wav'});
+  }
+
+  // AudioBuffer -> MP3 Blob using lamejs
+  function bufferToMp3(buffer){
+    const numCh = Math.min(2, buffer.numberOfChannels);
+    const sampleRate = buffer.sampleRate;
+    const mp3enc = new lamejs.Mp3Encoder(numCh, sampleRate, 128);
+    const blockSize = 1152;
+    const left = floatTo16(buffer.getChannelData(0));
+    const right = numCh>1 ? floatTo16(buffer.getChannelData(1)) : null;
+    const chunks = [];
+    for(let i=0; i<left.length; i+=blockSize){
+      const lChunk = left.subarray(i, i+blockSize);
+      const rChunk = right ? right.subarray(i, i+blockSize) : undefined;
+      const mp3buf = right ? mp3enc.encodeBuffer(lChunk, rChunk) : mp3enc.encodeBuffer(lChunk);
+      if(mp3buf.length>0) chunks.push(mp3buf);
+    }
+    const end = mp3enc.flush();
+    if(end.length>0) chunks.push(end);
+    return new Blob(chunks, {type:'audio/mp3'});
+  }
+  function floatTo16(float32){
+    const out = new Int16Array(float32.length);
+    for(let i=0;i<float32.length;i++){
+      let s = Math.max(-1, Math.min(1, float32[i]));
+      out[i] = s<0 ? s*0x8000 : s*0x7FFF;
+    }
+    return out;
+  }
+
+  function testVoice(v){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance('Это тестовая фраза, чтобы услышать тембр голоса.');
+    u.voice = v;
+    window.speechSynthesis.speak(u);
+  }
+
+  function init(){
+    initTabs();
+    initVoices();
+    initSliders();
+    initPresets();
+    initFmtToggles();
+    initWaveInteraction();
+    initSeekBar();
+    document.getElementById('storyText').addEventListener('input', updateStats);
+    updateStats();
+  }
+
+  return {sendToTTS, saveTxt, clearText, speak, stopSpeak, recordTTS, downloadTTS, toggleRecord, togglePauseRecord, uploadAudio,
+           applyVoiceChange, playSelection, pauseAll, deleteSelection, duplicateSelection, addSilence,
+           fadeIn, fadeOut, normalize, undo, clearSelection, downloadProcessed, testVoice, init};
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+</script>
+</body>
+</html>
