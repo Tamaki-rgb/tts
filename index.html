@@ -7,16 +7,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
 <style>
   :root{
-    --bg:#0b0a0d;
-    --bg-2:#141218;
-    --panel:#18151c;
-    --line:#2a242f;
-    --ember:#ff5a36;
-    --ember-dim:#7a2c1c;
-    --bone:#e8e2d6;
-    --bone-dim:#9b9389;
-    --static:#3d3645;
-    --good:#5fae7d;
+    --bg:#0b0a0d; --bg-2:#141218; --panel:#18151c; --line:#2a242f;
+    --ember:#ff5a36; --ember-dim:#7a2c1c; --bone:#e8e2d6; --bone-dim:#9b9389;
+    --static:#3d3645; --good:#5fae7d;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -25,53 +18,32 @@
       radial-gradient(ellipse at 20% -10%, rgba(255,90,54,.08), transparent 50%),
       radial-gradient(ellipse at 90% 110%, rgba(122,44,28,.10), transparent 55%),
       var(--bg);
-    color:var(--bone);
-    font-family: 'Courier New', ui-monospace, monospace;
-    min-height:100vh;
+    color:var(--bone); font-family:'Courier New', ui-monospace, monospace; min-height:100vh;
   }
-  @font-face{}
-  h1,h2,h3,.display{
-    font-family: Georgia, 'Times New Roman', serif;
-    letter-spacing:.02em;
-  }
+  h1,h2,h3{font-family:Georgia,'Times New Roman',serif; letter-spacing:.02em;}
   .noise{
     position:fixed; inset:0; pointer-events:none; opacity:.035; z-index:999;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     mix-blend-mode:overlay;
   }
   header{
-    border-bottom:1px solid var(--line);
-    padding:28px 32px 22px;
+    border-bottom:1px solid var(--line); padding:28px 32px 22px;
     display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px;
     background:linear-gradient(180deg, rgba(255,90,54,.04), transparent);
   }
   .brand{display:flex; align-items:center; gap:14px;}
-  .brand .dot{
-    width:11px; height:11px; border-radius:50%; background:var(--ember);
-    box-shadow:0 0 14px 3px rgba(255,90,54,.55);
-    animation:pulse 2.6s ease-in-out infinite;
-  }
+  .brand .dot{width:11px; height:11px; border-radius:50%; background:var(--ember); box-shadow:0 0 14px 3px rgba(255,90,54,.55); animation:pulse 2.6s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
   header h1{font-size:24px; margin:0; color:var(--bone); text-transform:uppercase; letter-spacing:.12em;}
   header .sub{font-size:12px; color:var(--bone-dim); margin-top:4px; letter-spacing:.04em;}
-  .onair{
-    font-size:11px; letter-spacing:.18em; color:var(--ember);
-    border:1px solid var(--ember-dim); padding:6px 12px; text-transform:uppercase;
-  }
+  .onair{font-size:11px; letter-spacing:.18em; color:var(--ember); border:1px solid var(--ember-dim); padding:6px 12px; text-transform:uppercase;}
 
-  nav.tabs{
-    display:flex; gap:2px; padding:0 32px; border-bottom:1px solid var(--line);
-    background:var(--bg-2); overflow-x:auto;
-  }
-  nav.tabs button{
-    background:transparent; border:none; color:var(--bone-dim);
-    font-family:inherit; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
-    padding:16px 18px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;
-  }
+  nav.tabs{display:flex; gap:2px; padding:0 32px; border-bottom:1px solid var(--line); background:var(--bg-2); overflow-x:auto;}
+  nav.tabs button{background:transparent; border:none; color:var(--bone-dim); font-family:inherit; font-size:13px; letter-spacing:.08em; text-transform:uppercase; padding:16px 18px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;}
   nav.tabs button:hover{color:var(--bone);}
   nav.tabs button.active{color:var(--ember); border-bottom-color:var(--ember);}
 
-  main{max-width:1180px; margin:0 auto; padding:32px;}
+  main{max-width:1220px; margin:0 auto; padding:32px;}
   section.panel{display:none;}
   section.panel.active{display:block; animation:fade .35s ease;}
   @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
@@ -79,61 +51,37 @@
   .grid{display:grid; grid-template-columns:1.3fr .9fr; gap:22px;}
   @media (max-width:880px){.grid{grid-template-columns:1fr;}}
 
-  .card{
-    background:var(--panel); border:1px solid var(--line); padding:22px;
-    position:relative;
-  }
-  .card::before{
-    content:''; position:absolute; top:0; left:0; width:28px; height:1px; background:var(--ember-dim);
-  }
+  .card{background:var(--panel); border:1px solid var(--line); padding:22px; position:relative;}
+  .card::before{content:''; position:absolute; top:0; left:0; width:28px; height:1px; background:var(--ember-dim);}
   .card h2{font-size:15px; text-transform:uppercase; letter-spacing:.1em; color:var(--bone); margin:0 0 16px;}
   .card h2 .n{color:var(--ember-dim); margin-right:8px;}
 
   label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--bone-dim); margin:16px 0 6px;}
   label:first-of-type{margin-top:0;}
 
-  textarea{
-    width:100%; min-height:220px; background:var(--bg); color:var(--bone);
-    border:1px solid var(--line); padding:14px; font-family:Georgia, serif; font-size:16px;
-    line-height:1.7; resize:vertical;
-  }
+  textarea{width:100%; min-height:220px; background:var(--bg); color:var(--bone); border:1px solid var(--line); padding:14px; font-family:Georgia,serif; font-size:16px; line-height:1.7; resize:vertical;}
   textarea:focus, select:focus, input:focus{outline:1px solid var(--ember); outline-offset:1px;}
-
   select, input[type=range]{width:100%;}
-  select{
-    background:var(--bg); color:var(--bone); border:1px solid var(--line); padding:10px 12px;
-    font-family:inherit; font-size:13px;
-  }
-  input[type=range]{
-    -webkit-appearance:none; height:3px; background:var(--static); margin-top:8px;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
-    background:var(--ember); cursor:pointer; box-shadow:0 0 8px rgba(255,90,54,.6);
-  }
+  select{background:var(--bg); color:var(--bone); border:1px solid var(--line); padding:10px 12px; font-family:inherit; font-size:13px;}
+  input[type=text]{width:100%; background:var(--bg); border:1px solid var(--line); color:var(--bone); padding:10px 12px; font-family:Georgia,serif; font-size:15px;}
+  input[type=range]{-webkit-appearance:none; height:3px; background:var(--static); margin-top:8px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--ember); cursor:pointer; box-shadow:0 0 8px rgba(255,90,54,.6);}
   .row{display:flex; gap:14px;}
   .row > div{flex:1;}
   .valrow{display:flex; justify-content:space-between; align-items:baseline;}
   .valrow span.v{font-size:12px; color:var(--ember);}
 
-  .btn{
-    background:transparent; border:1px solid var(--ember-dim); color:var(--bone);
-    font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing:.1em;
-    padding:12px 20px; cursor:pointer; transition:all .15s;
-  }
+  .btn{background:transparent; border:1px solid var(--ember-dim); color:var(--bone); font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing:.1em; padding:12px 20px; cursor:pointer; transition:all .15s;}
   .btn:hover{border-color:var(--ember); color:var(--ember); background:rgba(255,90,54,.06);}
   .btn.primary{background:var(--ember-dim); border-color:var(--ember-dim); color:var(--bone);}
   .btn.primary:hover{background:var(--ember); border-color:var(--ember); color:#1a0e0a;}
   .btn:disabled{opacity:.35; cursor:not-allowed;}
   .btn.rec{border-color:#7a2c2c;}
   .btn.rec.on{background:var(--ember); color:#1a0e0a; animation:pulse 1.2s infinite;}
-
+  .btn.sm{padding:7px 12px; font-size:10px;}
   .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
 
-  .voice-card{
-    border:1px solid var(--line); padding:14px; margin-bottom:10px; cursor:pointer;
-    display:flex; justify-content:space-between; align-items:center; transition:.15s;
-  }
+  .voice-card{border:1px solid var(--line); padding:14px; margin-bottom:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:.15s;}
   .voice-card:hover{border-color:var(--ember-dim);}
   .voice-card.sel{border-color:var(--ember); background:rgba(255,90,54,.05);}
   .voice-card .vname{font-size:13px; text-transform:uppercase; letter-spacing:.05em;}
@@ -144,22 +92,14 @@
   .meter span{flex:1; background:var(--static); min-height:2px; transition:height .06s;}
 
   .hint{font-size:11px; color:var(--bone-dim); line-height:1.6; margin-top:14px; border-left:2px solid var(--ember-dim); padding-left:12px;}
-  audio{width:100%; margin-top:14px; filter:invert(.85) sepia(.2) saturate(1.5) hue-rotate(-10deg);}
 
   footer{padding:30px 32px; text-align:center; font-size:11px; color:var(--bone-dim); letter-spacing:.05em; border-top:1px solid var(--line); margin-top:20px;}
 
-  .toast{
-    position:fixed; bottom:24px; right:24px; background:var(--panel); border:1px solid var(--ember-dim);
-    padding:12px 18px; font-size:12px; letter-spacing:.04em; z-index:1000; transform:translateY(20px); opacity:0;
-    transition:.25s; pointer-events:none;
-  }
+  .toast{position:fixed; bottom:24px; right:24px; background:var(--panel); border:1px solid var(--ember-dim); padding:12px 18px; font-size:12px; letter-spacing:.04em; z-index:1000; transform:translateY(20px); opacity:0; transition:.25s; pointer-events:none; max-width:320px;}
   .toast.show{transform:translateY(0); opacity:1;}
 
   .preset-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .preset{
-    border:1px solid var(--line); padding:14px 12px; cursor:pointer; text-align:left; background:transparent; color:var(--bone);
-    font-family:inherit;
-  }
+  .preset{border:1px solid var(--line); padding:14px 12px; cursor:pointer; text-align:left; background:transparent; color:var(--bone); font-family:inherit;}
   .preset:hover{border-color:var(--ember-dim);}
   .preset.sel{border-color:var(--ember); background:rgba(255,90,54,.06);}
   .preset .pname{font-size:12px; text-transform:uppercase; letter-spacing:.06em;}
@@ -168,15 +108,15 @@
   ::selection{background:var(--ember); color:#1a0e0a;}
 
   .editor-card{grid-column:1 / -1;}
-  .wave-wrap{
-    position:relative; background:var(--bg); border:1px solid var(--line);
-    height:140px; margin-top:14px; overflow:hidden; cursor:text;
-    user-select:none;
-  }
-  canvas#waveCanvas{display:block; width:100%; height:100%;}
+  .wave-scroll{overflow-x:auto; border:1px solid var(--line); background:var(--bg); margin-top:14px;}
+  .wave-wrap{position:relative; height:90px; cursor:text; user-select:none;}
+  .wave-wrap.bg{height:46px; opacity:.75;}
+  canvas.waveCanvas{display:block; height:100%;}
   .sel-overlay{position:absolute; top:0; bottom:0; background:rgba(255,90,54,.18); border-left:1px solid var(--ember); border-right:1px solid var(--ember); pointer-events:none; display:none;}
-  .playhead{position:absolute; top:0; bottom:0; width:1px; background:var(--bone); pointer-events:none; display:none;}
-  .wave-empty{display:flex; align-items:center; justify-content:center; height:100%; color:var(--bone-dim); font-size:12px; letter-spacing:.05em;}
+  .playhead{position:absolute; top:0; bottom:0; width:1px; background:#fff; pointer-events:none; display:none; z-index:5;}
+  .marker-flag{position:absolute; top:0; width:1px; background:var(--good); pointer-events:auto; cursor:pointer;}
+  .marker-flag .tip{position:absolute; top:-2px; left:2px; font-size:9px; background:var(--good); color:#0b0a0d; padding:1px 5px; white-space:nowrap;}
+  .wave-empty{display:flex; align-items:center; justify-content:center; height:90px; color:var(--bone-dim); font-size:12px; letter-spacing:.05em;}
   .time-row{display:flex; justify-content:space-between; font-size:10px; color:var(--bone-dim); margin-top:6px; letter-spacing:.04em;}
   .edit-toolbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
   .edit-toolbar .btn{font-size:11px; padding:9px 14px;}
@@ -186,6 +126,20 @@
   .fmt-toggle{display:flex; gap:0; border:1px solid var(--line); width:fit-content; margin-top:14px;}
   .fmt-toggle button{background:transparent; border:none; color:var(--bone-dim); padding:8px 16px; font-family:inherit; font-size:11px; letter-spacing:.06em; cursor:pointer;}
   .fmt-toggle button.sel{background:var(--ember-dim); color:var(--bone);}
+
+  .track-label{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--bone-dim); margin-top:14px; display:flex; justify-content:space-between; align-items:center;}
+  .marker-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .marker-chip{border:1px solid var(--good); color:var(--good); font-size:10px; padding:4px 8px; cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .marker-chip .x{cursor:pointer; opacity:.7;}
+  .marker-chip .x:hover{opacity:1; color:var(--ember);}
+
+  .draft-list{display:flex; flex-direction:column; gap:6px; margin-top:10px; max-height:160px; overflow-y:auto;}
+  .draft-item{display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); padding:8px 10px; font-size:12px; cursor:pointer;}
+  .draft-item:hover{border-color:var(--ember-dim);}
+  .draft-item .x{color:var(--bone-dim); cursor:pointer;}
+  .draft-item .x:hover{color:var(--ember);}
+
+  kbd{background:var(--bg-2); border:1px solid var(--line); padding:1px 6px; font-size:10px; border-radius:2px;}
 </style>
 </head>
 <body>
@@ -216,10 +170,10 @@
       <div class="card">
         <h2><span class="n">01</span>Текст истории</h2>
         <label>Заголовок</label>
-        <input id="storyTitle" type="text" value="Без названия" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--bone); padding:10px 12px; font-family:Georgia,serif; font-size:15px;">
+        <input id="storyTitle" type="text" value="Без названия">
         <label>Текст</label>
-        <textarea id="storyText" placeholder="Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи...">Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи. Соседи считали его чудаком — пока однажды не заметили, что в его доме горит свет, хотя сам он уже три дня как пропал.</textarea>
-        <div class="hint">Этот текст автоматически доступен на вкладке «Озвучка текста». Сохраняйте версии локально кнопкой ниже — всё хранится только в этой вкладке браузера.</div>
+        <textarea id="storyText" placeholder="Жил-был в глухой деревне человек...">Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи. Соседи считали его чудаком — пока однажды не заметили, что в его доме горит свет, хотя сам он уже три дня как пропал.</textarea>
+        <div class="hint">Можно вставлять теги прямо в текст: <b>[пауза]</b> — длинная пауза, <b>[шёпот]</b> / <b>[демон]</b> / <b>[обычно]</b> — переключение интонации участка при озвучке на вкладке TTS. Например: «...и тут он услышал [пауза] шёпот за дверью [шёпот] кто-то здесь [обычно] но было поздно».</div>
         <div class="btnrow">
           <button class="btn primary" onclick="App.sendToTTS()">→ Отправить на озвучку</button>
           <button class="btn" onclick="App.saveTxt()">Скачать .txt</button>
@@ -233,9 +187,16 @@
         <div style="font-size:12px; line-height:2; color:var(--bone-dim);">
           <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Есть зацепка в первом абзаце</label>
           <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Нарастание напряжения</label>
-          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Звуковые паузы (...) для эффекта</label>
+          <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Звуковые паузы [пауза] для эффекта</label>
           <label style="display:flex; gap:8px; align-items:center; text-transform:none; font-size:12px; color:var(--bone);"><input type="checkbox" style="width:auto;"> Финальный твист</label>
         </div>
+
+        <h2 style="margin-top:24px;"><span class="n">03</span>Черновики</h2>
+        <div class="btnrow" style="margin-top:0;">
+          <button class="btn sm" onclick="App.saveDraft()">💾 Сохранить как черновик</button>
+        </div>
+        <div class="draft-list" id="draftList"></div>
+        <div class="hint">Черновики хранятся локально в этом браузере (localStorage) — не уходят на сервер, но и не синхронизируются между устройствами.</div>
       </div>
     </div>
   </section>
@@ -247,45 +208,37 @@
         <h2><span class="n">01</span>Текст для озвучки</h2>
         <textarea id="ttsText" placeholder="Вставьте или впишите текст истории...">Жил-был в глухой деревне человек, который никогда не закрывал дверь после полуночи.</textarea>
         <div class="row">
-          <div>
-            <div class="valrow"><label>Скорость</label><span class="v" id="rateVal">1.0×</span></div>
-            <input type="range" id="rate" min="0.5" max="1.8" step="0.05" value="1.0">
-          </div>
-          <div>
-            <div class="valrow"><label>Высота тона</label><span class="v" id="pitchVal">1.0</span></div>
-            <input type="range" id="pitch" min="0" max="2" step="0.05" value="1.0">
-          </div>
+          <div><div class="valrow"><label>Скорость</label><span class="v" id="rateVal">1.0×</span></div><input type="range" id="rate" min="0.5" max="1.8" step="0.05" value="1.0"></div>
+          <div><div class="valrow"><label>Высота тона</label><span class="v" id="pitchVal">1.0</span></div><input type="range" id="pitch" min="0" max="2" step="0.05" value="1.0"></div>
         </div>
         <div class="row">
-          <div>
-            <div class="valrow"><label>Громкость</label><span class="v" id="volVal">100%</span></div>
-            <input type="range" id="vol" min="0" max="1" step="0.05" value="1">
-          </div>
-          <div>
-            <div class="valrow"><label>Пауза между предложениями</label><span class="v" id="pauseVal">300мс</span></div>
-            <input type="range" id="pause" min="0" max="1200" step="50" value="300">
-          </div>
+          <div><div class="valrow"><label>Громкость</label><span class="v" id="volVal">100%</span></div><input type="range" id="vol" min="0" max="1" step="0.05" value="1"></div>
+          <div><div class="valrow"><label>Пауза между предложениями</label><span class="v" id="pauseVal">300мс</span></div><input type="range" id="pause" min="0" max="1200" step="50" value="300"></div>
         </div>
         <div class="btnrow">
-          <button class="btn primary" id="ttsPlay" onclick="App.speak()">▶ Озвучить</button>
+          <button class="btn primary" id="ttsPlay" onclick="App.speak()">▶ Озвучить всё</button>
+          <button class="btn" onclick="App.speakParagraphAtCursor()">▶ Озвучить абзац у курсора</button>
           <button class="btn" onclick="App.stopSpeak()">■ Стоп</button>
+        </div>
+        <div class="btnrow">
           <button class="btn rec" id="ttsRecBtn" onclick="App.recordTTS()">● Записать вкладку в файл</button>
         </div>
-        <div class="fmt-toggle" id="ttsFmtToggle">
-          <button class="sel" data-fmt="wav">WAV</button>
-          <button data-fmt="mp3">MP3</button>
-        </div>
-        <div class="hint" id="ttsHint">Озвучка использует голоса, встроенные в ваш браузер/ОС. «Записать вкладку» откроет системное окно выбора — выберите ЭТУ вкладку с галочкой «Поделиться звуком» и сразу нажмите «Озвучить». Работает в Chrome/Edge на компьютере; на телефоне и в Safari такой захват браузеры не разрешают.</div>
-        <audio id="ttsAudioOut" controls style="display:none;"></audio>
-        <div class="btnrow" id="ttsDlRow" style="display:none;">
-          <button class="btn" onclick="App.downloadTTS()">↓ Скачать запись</button>
-        </div>
+        <div class="fmt-toggle" id="ttsFmtToggle"><button class="sel" data-fmt="wav">WAV</button><button data-fmt="mp3">MP3</button></div>
+        <div class="hint" id="ttsHint">«Записать вкладку» откроет системное окно — выберите ЭТУ вкладку с галочкой «Поделиться звуком» и сразу нажмите «Озвучить всё». Работает в Chrome/Edge на компьютере; на телефоне обычно недоступно. Теги [пауза]/[шёпот]/[демон] в тексте распознаются автоматически.</div>
+        <audio id="ttsAudioOut" controls style="display:none; width:100%; margin-top:14px;"></audio>
+        <div class="btnrow" id="ttsDlRow" style="display:none;"><button class="btn" onclick="App.downloadTTS()">↓ Скачать запись</button><button class="btn" onclick="App.sendTtsToChanger()">→ Отправить в «Смену голоса»</button></div>
       </div>
 
       <div class="card">
         <h2><span class="n">02</span>Голос рассказчика</h2>
         <div id="voiceList"></div>
-        <div class="hint">Для жанра хоррора рекомендуем голоса, помеченные тегом «низкий/young male» — они ближе всего к интонации молодого рассказчика у костра. Если такого голоса нет в системе — используйте вкладку «Смена голоса», чтобы понизить тон своей собственной записи.</div>
+
+        <h2 style="margin-top:24px;"><span class="n">03</span>Сохранённые пресеты</h2>
+        <div class="row" style="margin-top:0;">
+          <input type="text" id="presetName" placeholder="Название пресета">
+          <button class="btn sm" onclick="App.saveTtsPreset()" style="flex:0 0 auto;">💾</button>
+        </div>
+        <div class="draft-list" id="ttsPresetList"></div>
       </div>
     </div>
   </section>
@@ -294,7 +247,7 @@
   <section class="panel" id="changer">
     <div class="grid">
       <div class="card">
-        <h2><span class="n">01</span>Запись собственного голоса</h2>
+        <h2><span class="n">01</span>Дорожка голоса</h2>
         <div class="btnrow" style="margin-top:0;">
           <button class="btn rec" id="recBtn" onclick="App.toggleRecord()">● Записать</button>
           <button class="btn" id="pauseRecBtn" onclick="App.togglePauseRecord()" disabled>⏸ Пауза</button>
@@ -302,84 +255,109 @@
           <input type="file" id="fileInput" accept="audio/*" style="display:none;">
         </div>
         <div class="meter" id="meter"></div>
-        <div class="hint">Можно ставить запись на паузу и продолжать — например, чтобы передохнуть между главами истории. Всё склеится в одну запись при нажатии «Стоп».</div>
+        <div class="hint">Можно ставить запись на паузу и продолжать. <kbd>Пробел</kbd> — play/pause, <kbd>Delete</kbd> — удалить выделенное.</div>
+
+        <div class="track-label">Дорожка фона / атмосферы <span></span></div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="btn sm" onclick="App.uploadBackground()">Загрузить фон</button>
+          <button class="btn sm" onclick="App.removeBackground()">Убрать фон</button>
+        </div>
+        <div class="valrow" style="margin-top:10px;"><label style="margin:0;">Громкость фона</label><span class="v" id="bgGainVal">40%</span></div>
+        <input type="range" id="bgGain" min="0" max="1.5" step="0.05" value="0.4">
+        <div class="hint">Фон автоматически зациклится или обрежется под длину голосовой дорожки при прослушивании и экспорте — отдельно их резать не нужно.</div>
       </div>
 
       <div class="card">
         <h2><span class="n">02</span>Пресет для выделенного участка</h2>
         <div class="preset-grid" id="presetGrid"></div>
-
         <label>Тон голоса (полутоны)</label>
         <div class="valrow"><span></span><span class="v" id="manualPitchVal">+0</span></div>
         <input type="range" id="manualPitch" min="-12" max="12" step="1" value="0">
-
         <label>Громкость участка</label>
         <div class="valrow"><span></span><span class="v" id="gainVal">100%</span></div>
         <input type="range" id="gainAmt" min="0" max="2" step="0.05" value="1">
-
         <label>Эхо / реверберация</label>
         <div class="valrow"><span></span><span class="v" id="echoVal">0%</span></div>
         <input type="range" id="echoAmt" min="0" max="0.6" step="0.02" value="0">
-
-        <label>Приглушённость «из-под земли» (низкие частоты)</label>
+        <label>Приглушённость «из-под земли»</label>
         <div class="valrow"><span></span><span class="v" id="lowpassVal">выкл</span></div>
         <input type="range" id="lowpassAmt" min="0" max="100" step="2" value="0">
-
-        <label>«Сквозь стену / по телефону» (срез низов)</label>
+        <label>«Сквозь стену / по телефону»</label>
         <div class="valrow"><span></span><span class="v" id="highpassVal">выкл</span></div>
         <input type="range" id="highpassAmt" min="0" max="100" step="2" value="0">
-
-        <label>Хрипота / искажение (для чудовища)</label>
+        <label>Хрипота / искажение</label>
         <div class="valrow"><span></span><span class="v" id="distortVal">0%</span></div>
         <input type="range" id="distortAmt" min="0" max="100" step="2" value="0">
-
+        <label>Шумоподавление (срез шипения/гула)</label>
+        <div class="valrow"><span></span><span class="v" id="denoiseVal">выкл</span></div>
+        <input type="range" id="denoiseAmt" min="0" max="100" step="5" value="0">
+        <label>Компрессор громкости (сглаживание)</label>
+        <div class="valrow"><span></span><span class="v" id="compVal">выкл</span></div>
+        <input type="range" id="compAmt" min="0" max="100" step="5" value="0">
         <div class="btnrow">
-          <button class="btn" onclick="App.fadeIn()">↗ Плавное появление</button>
-          <button class="btn" onclick="App.fadeOut()">↘ Плавное затухание</button>
-          <button class="btn" onclick="App.normalize()">⚡ Нормализовать громкость</button>
+          <button class="btn" onclick="App.fadeIn()">↗ Появление</button>
+          <button class="btn" onclick="App.fadeOut()">↘ Затухание</button>
+          <button class="btn" onclick="App.normalize()">⚡ Нормализовать</button>
         </div>
-        <div class="hint">Если на таймлайне ничего не выделено — эффект применится ко всей записи. Если выделить участок — только к нему.</div>
+        <div class="hint">Если ничего не выделено — эффект применится ко всей записи. Выделили участок — только к нему.</div>
       </div>
 
       <div class="card editor-card">
         <h2><span class="n">03</span>Таймлайн — редактор записи</h2>
-        <div class="wave-wrap" id="waveWrap">
-          <canvas id="waveCanvas"></canvas>
-          <div class="sel-overlay" id="selOverlay"></div>
-          <div class="playhead" id="playhead"></div>
-          <div class="wave-empty" id="waveEmpty">запишите или загрузите голос, чтобы увидеть волну</div>
+
+        <div class="track-label">Голос
+          <span><button class="btn sm" onclick="App.zoomOut()">−</button> <span id="zoomLbl" style="font-size:10px;">1×</span> <button class="btn sm" onclick="App.zoomIn()">+</button></span>
         </div>
+        <div class="wave-scroll" id="waveScroll">
+          <div class="wave-wrap" id="waveWrap">
+            <canvas class="waveCanvas" id="waveCanvas"></canvas>
+            <div class="sel-overlay" id="selOverlay"></div>
+            <div class="playhead" id="playhead"></div>
+            <div id="markerLayer"></div>
+            <div class="wave-empty" id="waveEmpty">запишите или загрузите голос, чтобы увидеть волну</div>
+          </div>
+        </div>
+        <div class="track-label">Фон</div>
+        <div class="wave-scroll"><div class="wave-wrap bg" id="bgWaveWrap"><canvas class="waveCanvas" id="bgWaveCanvas"></canvas><div class="wave-empty" id="bgWaveEmpty" style="height:46px; font-size:10px;">фон не загружен</div></div></div>
+
         <div class="time-row"><span id="timeStart">0:00</span><span id="timeTotal">0:00</span></div>
         <input type="range" id="seekBar" min="0" max="1000" step="1" value="0" style="margin-top:6px;">
         <div class="time-row"><span id="seekTime">0:00</span><span id="seekTotal">0:00</span></div>
 
         <div class="edit-toolbar">
           <button class="btn primary" onclick="App.applyVoiceChange()">⚙ Применить эффект</button>
-          <button class="btn" onclick="App.playSelection()">▶ Слушать с бегунка / выделения</button>
+          <button class="btn" onclick="App.playSelection()">▶ Слушать (вкл. фон)</button>
           <button class="btn" onclick="App.pauseAll()">■ Стоп</button>
           <button class="btn" onclick="App.duplicateSelection()">⧉ Повторить выделенное</button>
-          <button class="btn" onclick="App.addSilence()">+ Добавить тишину (1с)</button>
+          <button class="btn" onclick="App.addSilence()">+ Тишина 1с</button>
           <button class="btn danger" onclick="App.deleteSelection()">✕ Удалить выделенное</button>
           <button class="btn" onclick="App.undo()" id="undoBtn" disabled>↺ Отменить</button>
           <button class="btn" onclick="App.clearSelection()">Снять выделение</button>
+          <button class="btn" onclick="App.addMarker()">🚩 Метка главы на бегунке</button>
         </div>
+        <div class="marker-list" id="markerListUI"></div>
         <div class="history-tag" id="historyTag">История изменений: 0</div>
 
-        <div class="fmt-toggle" id="changerFmtToggle">
-          <button class="sel" data-fmt="wav">WAV</button>
-          <button data-fmt="mp3">MP3</button>
-        </div>
+        <div class="fmt-toggle" id="changerFmtToggle"><button class="sel" data-fmt="wav">WAV</button><button data-fmt="mp3">MP3</button></div>
         <div class="btnrow">
-          <button class="btn" onclick="App.downloadProcessed()">↓ Скачать результат</button>
+          <button class="btn" onclick="App.downloadProcessed()">↓ Скачать результат (с фоном)</button>
+          <button class="btn" onclick="App.exportByMarkers()">↓ Экспорт по главам (метки)</button>
         </div>
-        <audio id="procAudio" style="display:none;"></audio>
+
+        <h2 style="margin-top:24px;"><span class="n">04</span>Проекты</h2>
+        <div class="btnrow" style="margin-top:0;">
+          <input type="text" id="projectName" placeholder="Название проекта" style="flex:1 1 200px;">
+          <button class="btn sm" onclick="App.saveProject()">💾 Сохранить проект</button>
+        </div>
+        <div class="draft-list" id="projectList"></div>
+        <div class="hint">Проект сохраняет текущую запись (голос + метки) локально в этом браузере (IndexedDB). Фоновую дорожку и эффекты-настройки нужно будет переподобрать после загрузки проекта.</div>
       </div>
     </div>
   </section>
 
 </main>
 
-<footer>НОЧНОЙ ЭФИР — локальная студия в браузере. Ничего не уходит на сервер: TTS и обработка голоса выполняются на вашем устройстве.</footer>
+<footer>НОЧНОЙ ЭФИР — локальная студия в браузере. Ничего не уходит на сервер.</footer>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -387,13 +365,18 @@ const App = (() => {
   let voices = [];
   let selectedVoice = null;
   let mediaRecorder, recordedChunks = [], micStream, audioCtx, analyser, meterBars=[];
-  let history = [];       // undo stack of AudioBuffers
-  let currentBuffer = null; // the working AudioBuffer shown on timeline
-  let selStart = null, selEnd = null; // in seconds
-  let isDragging = false, dragStartX = 0;
-  let playingNode = null;
+  let history = [];
+  let currentBuffer = null;
+  let bgBuffer = null;
+  let selStart = null, selEnd = null;
+  let isDragging = false;
+  let playingNode = null, bgPlayingNode = null;
   let ttsFmt = 'wav', changerFmt = 'wav';
   let tabStream = null, tabRecorder = null, tabChunks = [], ttsRecordedBlob = null;
+  let zoom = 1;
+  let markers = []; // seconds
+  let playStartedAt = 0, playOffsetSec = 0, playRafId = null, isSeeking = false;
+  let db = null;
 
   const presets = [
     {id:'normal', name:'Обычный', desc:'Без изменений', pitch:0, echo:0, lowpass:0, highpass:0, distort:0},
@@ -402,16 +385,17 @@ const App = (() => {
     {id:'narrator', name:'Рассказчик-юноша', desc:'Лёгкое понижение, чёткая дикция', pitch:-2, echo:0.08, lowpass:0, highpass:0, distort:0},
     {id:'monster', name:'Чудовище', desc:'Очень низкий, рычащий', pitch:-12, echo:0.2, lowpass:45, highpass:0, distort:55},
     {id:'whisper', name:'Шёпот из тьмы', desc:'Высокий, тихий, эхо в темноте', pitch:9, echo:0.55, lowpass:0, highpass:15, distort:0},
-    {id:'telephone', name:'По телефону', desc:'Узкая полоса, как звонок издалека', pitch:0, echo:0.05, lowpass:0, highpass:55, distort:10},
+    {id:'telephone', name:'По телефону', desc:'Узкая полоса, звонок издалека', pitch:0, echo:0.05, lowpass:0, highpass:55, distort:10},
     {id:'underground', name:'Из-под земли', desc:'Глухо, давяще, низко', pitch:-4, echo:0.25, lowpass:60, highpass:0, distort:15},
   ];
 
   function toast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2600);
+    clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2800);
   }
 
+  // ============ TABS ============
   function initTabs(){
     document.querySelectorAll('nav.tabs button').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -419,67 +403,62 @@ const App = (() => {
         document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.dataset.tab).classList.add('active');
-        if(btn.dataset.tab === 'changer') drawWave();
+        if(btn.dataset.tab === 'changer'){ drawWave(); drawBgWave(); }
       });
     });
   }
 
   function initFmtToggles(){
     document.querySelectorAll('#ttsFmtToggle button').forEach(b=>{
-      b.onclick = ()=>{
-        document.querySelectorAll('#ttsFmtToggle button').forEach(x=>x.classList.remove('sel'));
-        b.classList.add('sel'); ttsFmt = b.dataset.fmt;
-      };
+      b.onclick = ()=>{ document.querySelectorAll('#ttsFmtToggle button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); ttsFmt=b.dataset.fmt; };
     });
     document.querySelectorAll('#changerFmtToggle button').forEach(b=>{
-      b.onclick = ()=>{
-        document.querySelectorAll('#changerFmtToggle button').forEach(x=>x.classList.remove('sel'));
-        b.classList.add('sel'); changerFmt = b.dataset.fmt;
-      };
+      b.onclick = ()=>{ document.querySelectorAll('#changerFmtToggle button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); changerFmt=b.dataset.fmt; };
     });
   }
 
+  // ============ VOICES ============
   function tagFor(v){
-    const n = (v.name+v.lang).toLowerCase();
-    if(n.includes('male') || n.includes('man')) return 'мужской';
-    if(n.includes('female') || n.includes('woman')) return 'женский';
+    const n=(v.name+v.lang).toLowerCase();
+    if(n.includes('male')||n.includes('man')) return 'мужской';
+    if(n.includes('female')||n.includes('woman')) return 'женский';
     return 'голос системы';
   }
-
   function initVoices(){
     function populate(){
       voices = window.speechSynthesis.getVoices();
       const list = document.getElementById('voiceList');
-      list.innerHTML = '';
-      if(voices.length===0){
-        list.innerHTML = '<div class="hint">Голоса ещё загружаются... если список не появится — браузер может не поддерживать синтез речи на этом устройстве.</div>';
-        return;
-      }
-      const sorted = [...voices].sort((a,b)=> (a.lang.startsWith('ru')?0:1) - (b.lang.startsWith('ru')?0:1));
+      list.innerHTML='';
+      if(voices.length===0){ list.innerHTML='<div class="hint">Голоса ещё загружаются...</div>'; return; }
+      const sorted=[...voices].sort((a,b)=>(a.lang.startsWith('ru')?0:1)-(b.lang.startsWith('ru')?0:1));
       sorted.forEach(v=>{
-        const card = document.createElement('div');
-        card.className = 'voice-card' + (selectedVoice===v.name ? ' sel':'');
-        card.innerHTML = `<div><div class="vname">${v.name}</div><div class="vtag">${v.lang} · ${tagFor(v)}</div></div><div class="play">▶ тест</div>`;
-        card.onclick = (e)=>{
-          if(e.target.classList.contains('play')){ App.testVoice(v); return; }
+        const card=document.createElement('div');
+        card.className='voice-card'+(selectedVoice===v.name?' sel':'');
+        card.innerHTML=`<div><div class="vname">${v.name}</div><div class="vtag">${v.lang} · ${tagFor(v)}</div></div><div class="play">▶ тест</div>`;
+        card.onclick=(e)=>{
+          if(e.target.classList.contains('play')){ testVoice(v); return; }
           document.querySelectorAll('.voice-card').forEach(c=>c.classList.remove('sel'));
-          card.classList.add('sel');
-          selectedVoice = v.name;
+          card.classList.add('sel'); selectedVoice=v.name;
         };
         list.appendChild(card);
       });
-      if(!selectedVoice && sorted[0]){ selectedVoice = sorted[0].name; list.firstChild.classList.add('sel'); }
+      if(!selectedVoice && sorted[0]){ selectedVoice=sorted[0].name; list.firstChild.classList.add('sel'); }
     }
     populate();
     window.speechSynthesis.onvoiceschanged = populate;
   }
+  function testVoice(v){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance('Это тестовая фраза, чтобы услышать тембр голоса.');
+    u.voice=v; window.speechSynthesis.speak(u);
+  }
 
+  // ============ SLIDERS / PRESETS ============
   function initSliders(){
-    const bind = (id, valId, fmt) => {
-      const el = document.getElementById(id);
-      const out = valId ? document.getElementById(valId) : null;
-      const update = ()=> { if(out) out.textContent = fmt(el.value); };
-      el.addEventListener('input', update); update();
+    const bind=(id,valId,fmt)=>{
+      const el=document.getElementById(id), out=valId?document.getElementById(valId):null;
+      const update=()=>{ if(out) out.textContent=fmt(el.value); };
+      el.addEventListener('input',update); update();
     };
     bind('rate','rateVal', v=>parseFloat(v).toFixed(2)+'×');
     bind('pitch','pitchVal', v=>parseFloat(v).toFixed(2));
@@ -488,86 +467,172 @@ const App = (() => {
     bind('manualPitch','manualPitchVal', v=>(v>0?'+':'')+v+' полутонов');
     bind('gainAmt','gainVal', v=>Math.round(v*100)+'%');
     bind('echoAmt','echoVal', v=>Math.round(v*100)+'%');
-    bind('lowpassAmt','lowpassVal', v=> v=='0' ? 'выкл' : Math.round(v)+'%');
-    bind('highpassAmt','highpassVal', v=> v=='0' ? 'выкл' : Math.round(v)+'%');
-    bind('distortAmt','distortVal', v=> v=='0' ? '0%' : Math.round(v)+'%');
+    bind('lowpassAmt','lowpassVal', v=>v=='0'?'выкл':Math.round(v)+'%');
+    bind('highpassAmt','highpassVal', v=>v=='0'?'выкл':Math.round(v)+'%');
+    bind('distortAmt','distortVal', v=>v=='0'?'0%':Math.round(v)+'%');
+    bind('denoiseAmt','denoiseVal', v=>v=='0'?'выкл':Math.round(v)+'%');
+    bind('compAmt','compVal', v=>v=='0'?'выкл':Math.round(v)+'%');
+    bind('bgGain','bgGainVal', v=>Math.round(v*100)+'%');
   }
-
   function initPresets(){
-    const grid = document.getElementById('presetGrid');
+    const grid=document.getElementById('presetGrid');
     presets.forEach(p=>{
-      const btn = document.createElement('button');
-      btn.className = 'preset' + (p.id==='normal' ? ' sel':'');
-      btn.innerHTML = `<div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div>`;
-      btn.onclick = ()=>{
+      const btn=document.createElement('button');
+      btn.className='preset'+(p.id==='normal'?' sel':'');
+      btn.innerHTML=`<div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div>`;
+      btn.onclick=()=>{
         document.querySelectorAll('.preset').forEach(x=>x.classList.remove('sel'));
         btn.classList.add('sel');
-        const setSlider = (id, valId, val, fmt)=>{
-          document.getElementById(id).value = val;
-          document.getElementById(valId).textContent = fmt(val);
-        };
-        setSlider('manualPitch','manualPitchVal', p.pitch, v=>(v>0?'+':'')+v+' полутонов');
-        setSlider('echoAmt','echoVal', p.echo, v=>Math.round(v*100)+'%');
-        setSlider('lowpassAmt','lowpassVal', p.lowpass, v=> v=='0'?'выкл':Math.round(v)+'%');
-        setSlider('highpassAmt','highpassVal', p.highpass, v=> v=='0'?'выкл':Math.round(v)+'%');
-        setSlider('distortAmt','distortVal', p.distort, v=> v=='0'?'0%':Math.round(v)+'%');
+        const set=(id,valId,val,fmt)=>{ document.getElementById(id).value=val; document.getElementById(valId).textContent=fmt(val); };
+        set('manualPitch','manualPitchVal',p.pitch,v=>(v>0?'+':'')+v+' полутонов');
+        set('echoAmt','echoVal',p.echo,v=>Math.round(v*100)+'%');
+        set('lowpassAmt','lowpassVal',p.lowpass,v=>v=='0'?'выкл':Math.round(v)+'%');
+        set('highpassAmt','highpassVal',p.highpass,v=>v=='0'?'выкл':Math.round(v)+'%');
+        set('distortAmt','distortVal',p.distort,v=>v=='0'?'0%':Math.round(v)+'%');
       };
       grid.appendChild(btn);
     });
   }
 
+  // ============ STORY / EDITOR ============
   function updateStats(){
-    const txt = document.getElementById('storyText').value;
-    const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
-    const chars = txt.length;
-    const minutes = (words/130).toFixed(1);
-    document.getElementById('stats').innerHTML = `Слов: <b style="color:var(--bone)">${words}</b><br>Символов: <b style="color:var(--bone)">${chars}</b><br>Примерное время озвучки: <b style="color:var(--bone)">~${minutes} мин</b>`;
+    const txt=document.getElementById('storyText').value;
+    const words=txt.trim()?txt.trim().split(/\s+/).length:0;
+    const chars=txt.length;
+    const minutes=(words/130).toFixed(1);
+    document.getElementById('stats').innerHTML=`Слов: <b style="color:var(--bone)">${words}</b><br>Символов: <b style="color:var(--bone)">${chars}</b><br>Примерное время озвучки: <b style="color:var(--bone)">~${minutes} мин</b>`;
   }
-
-  // ---------- EDITOR ----------
   function sendToTTS(){
-    document.getElementById('ttsText').value = document.getElementById('storyText').value;
+    document.getElementById('ttsText').value=document.getElementById('storyText').value;
     document.querySelector('[data-tab="tts"]').click();
     toast('Текст отправлен в озвучку');
   }
   function saveTxt(){
-    const title = document.getElementById('storyTitle').value || 'story';
-    const txt = document.getElementById('storyText').value;
-    const blob = new Blob([txt], {type:'text/plain'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = title.replace(/\s+/g,'_') + '.txt';
-    a.click();
+    const title=document.getElementById('storyTitle').value||'story';
+    const blob=new Blob([document.getElementById('storyText').value],{type:'text/plain'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=title.replace(/\s+/g,'_')+'.txt'; a.click();
   }
-  function clearText(){
-    if(confirm('Очистить текст истории?')) document.getElementById('storyText').value='';
-    updateStats();
+  function clearText(){ if(confirm('Очистить текст истории?')) document.getElementById('storyText').value=''; updateStats(); }
+
+  // ---- drafts (localStorage) ----
+  const DRAFTS_KEY = 'nightair_drafts_v1';
+  function getDrafts(){ try{ return JSON.parse(localStorage.getItem(DRAFTS_KEY))||[]; }catch(e){ return []; } }
+  function setDrafts(arr){ localStorage.setItem(DRAFTS_KEY, JSON.stringify(arr)); }
+  function saveDraft(){
+    const title=document.getElementById('storyTitle').value||'Без названия';
+    const text=document.getElementById('storyText').value;
+    const drafts=getDrafts();
+    drafts.unshift({id:Date.now(), title, text, ts:new Date().toLocaleString('ru-RU')});
+    setDrafts(drafts.slice(0,30));
+    renderDrafts();
+    toast('Черновик сохранён');
+  }
+  function renderDrafts(){
+    const list=document.getElementById('draftList');
+    const drafts=getDrafts();
+    if(drafts.length===0){ list.innerHTML='<div class="hint">Пока нет сохранённых черновиков</div>'; return; }
+    list.innerHTML='';
+    drafts.forEach(d=>{
+      const el=document.createElement('div');
+      el.className='draft-item';
+      el.innerHTML=`<span>${d.title} <span style="color:var(--bone-dim)">· ${d.ts}</span></span><span class="x" data-id="${d.id}">✕</span>`;
+      el.addEventListener('click',(e)=>{
+        if(e.target.classList.contains('x')){
+          setDrafts(getDrafts().filter(x=>x.id!==d.id)); renderDrafts(); toast('Черновик удалён'); return;
+        }
+        document.getElementById('storyTitle').value=d.title;
+        document.getElementById('storyText').value=d.text;
+        updateStats();
+        toast('Черновик загружен');
+      });
+      list.appendChild(el);
+    });
   }
 
-  // ---------- TTS ----------
-  function speak(){
-    const text = document.getElementById('ttsText').value.trim();
-    if(!text){ toast('Введите текст'); return; }
-    window.speechSynthesis.cancel();
-    const sentences = text.split(/(?<=[.!?…])\s+/);
-    const pauseMs = parseInt(document.getElementById('pause').value);
-    const v = voices.find(v=>v.name===selectedVoice);
-    let i = 0;
+  // ---- tag markers in text -> segments for TTS ----
+  function parseTags(text){
+    // splits into segments: {text, mode} where mode in normal/whisper/demon/pause
+    const tagRe = /\[(пауза|шёпот|демон|обычно)\]/gi;
+    const parts = []; let lastIndex=0; let mode='normal'; let m;
+    while((m=tagRe.exec(text))){
+      const chunk = text.slice(lastIndex, m.index);
+      if(chunk.trim()) parts.push({text:chunk, mode});
+      const tag = m[1].toLowerCase();
+      if(tag==='пауза') parts.push({pause:true});
+      else if(tag==='шёпот') mode='whisper';
+      else if(tag==='демон') mode='demon';
+      else if(tag==='обычно') mode='normal';
+      lastIndex = tagRe.lastIndex;
+    }
+    const rest = text.slice(lastIndex);
+    if(rest.trim()) parts.push({text:rest, mode});
+    return parts;
+  }
+
+  // ============ TTS ============
+  function speakSegments(segments, baseRate, basePitch, baseVol, pauseMs, voice, onDone){
+    let i=0;
     function next(){
-      if(i>=sentences.length){
-        if(tabRecorder && tabRecorder.state==='recording') setTimeout(()=>tabRecorder.stop(), 400);
-        return;
+      if(i>=segments.length){ if(onDone) onDone(); return; }
+      const seg = segments[i];
+      if(seg.pause){ i++; setTimeout(next, pauseMs+500); return; }
+      const sentences = seg.text.split(/(?<=[.!?…])\s+/).filter(s=>s.trim());
+      let j=0;
+      function nextSentence(){
+        if(j>=sentences.length){ i++; setTimeout(next, pauseMs); return; }
+        const u=new SpeechSynthesisUtterance(sentences[j]);
+        if(voice) u.voice=voice;
+        u.rate = baseRate * (seg.mode==='demon'?0.85:1);
+        u.pitch = seg.mode==='whisper' ? Math.min(2,basePitch+0.5) : seg.mode==='demon' ? Math.max(0,basePitch-0.5) : basePitch;
+        u.volume = seg.mode==='whisper' ? baseVol*0.6 : baseVol;
+        u.onend=()=>{ j++; setTimeout(nextSentence, pauseMs*0.4); };
+        window.speechSynthesis.speak(u);
       }
-      const u = new SpeechSynthesisUtterance(sentences[i]);
-      if(v) u.voice = v;
-      u.rate = parseFloat(document.getElementById('rate').value);
-      u.pitch = parseFloat(document.getElementById('pitch').value);
-      u.volume = parseFloat(document.getElementById('vol').value);
-      u.onend = ()=>{ i++; setTimeout(next, pauseMs); };
-      window.speechSynthesis.speak(u);
+      nextSentence();
     }
     next();
   }
+
+  function speak(){
+    const text=document.getElementById('ttsText').value.trim();
+    if(!text){ toast('Введите текст'); return; }
+    window.speechSynthesis.cancel();
+    const segments = parseTags(text);
+    const v = voices.find(v=>v.name===selectedVoice);
+    speakSegments(
+      segments,
+      parseFloat(document.getElementById('rate').value),
+      parseFloat(document.getElementById('pitch').value),
+      parseFloat(document.getElementById('vol').value),
+      parseInt(document.getElementById('pause').value),
+      v,
+      ()=>{ if(tabRecorder && tabRecorder.state==='recording') setTimeout(()=>tabRecorder.stop(), 500); }
+    );
+  }
+
+  function speakParagraphAtCursor(){
+    const ta = document.getElementById('ttsText');
+    const text = ta.value;
+    const pos = ta.selectionStart || 0;
+    const paragraphs = text.split(/\n+/);
+    let idx=0, count=0, found=null;
+    for(const p of paragraphs){
+      const start=count, end=count+p.length;
+      if(pos>=start && pos<=end){ found=p; break; }
+      count = end+1;
+    }
+    if(!found){ toast('Поставьте курсор внутри абзаца в тексте'); return; }
+    window.speechSynthesis.cancel();
+    const segments = parseTags(found);
+    const v = voices.find(v=>v.name===selectedVoice);
+    speakSegments(segments,
+      parseFloat(document.getElementById('rate').value),
+      parseFloat(document.getElementById('pitch').value),
+      parseFloat(document.getElementById('vol').value),
+      parseInt(document.getElementById('pause').value), v);
+    toast('Озвучиваю абзац у курсора');
+  }
+
   function stopSpeak(){ window.speechSynthesis.cancel(); }
 
   async function recordTTS(){
@@ -575,603 +640,670 @@ const App = (() => {
       tabStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
       const audioTracks = tabStream.getAudioTracks();
       if(audioTracks.length===0){
-        toast('Звук вкладки не выбран — отметьте галочку «Поделиться звуком» в окне выбора');
-        tabStream.getTracks().forEach(t=>t.stop());
-        return;
+        toast('Звук вкладки не выбран — отметьте «Поделиться звуком»');
+        tabStream.getTracks().forEach(t=>t.stop()); return;
       }
-      tabChunks = [];
+      tabChunks=[];
       tabRecorder = new MediaRecorder(tabStream);
-      tabRecorder.ondataavailable = e=> tabChunks.push(e.data);
-      tabRecorder.onstop = ()=>{
-        ttsRecordedBlob = new Blob(tabChunks, {type:'audio/webm'});
-        const url = URL.createObjectURL(ttsRecordedBlob);
-        const out = document.getElementById('ttsAudioOut');
-        out.src = url; out.style.display='block';
+      tabRecorder.ondataavailable=e=>tabChunks.push(e.data);
+      tabRecorder.onstop=()=>{
+        ttsRecordedBlob = new Blob(tabChunks,{type:'audio/webm'});
+        const out=document.getElementById('ttsAudioOut');
+        out.src=URL.createObjectURL(ttsRecordedBlob); out.style.display='block';
         document.getElementById('ttsDlRow').style.display='flex';
         tabStream.getTracks().forEach(t=>t.stop());
         toast('Запись готова');
       };
       tabRecorder.start();
-      toast('Идёт запись вкладки — теперь нажмите «Озвучить»');
-    }catch(e){
-      toast('Захват вкладки недоступен в этом браузере/устройстве');
-    }
+      toast('Идёт запись вкладки — теперь нажмите «Озвучить всё»');
+    }catch(e){ toast('Захват вкладки недоступен в этом браузере/устройстве'); }
   }
 
   async function downloadTTS(){
     if(!ttsRecordedBlob){ toast('Сначала запишите озвучку'); return; }
-    if(ttsFmt === 'wav'){
-      const arrBuf = await ttsRecordedBlob.arrayBuffer();
-      const ctx = getCtx();
-      const buf = await ctx.decodeAudioData(arrBuf);
-      triggerDownload(bufferToWav(buf), 'tts_record.wav');
-    } else {
-      const arrBuf = await ttsRecordedBlob.arrayBuffer();
-      const ctx = getCtx();
-      const buf = await ctx.decodeAudioData(arrBuf);
-      triggerDownload(bufferToMp3(buf), 'tts_record.mp3');
-    }
+    const arrBuf = await ttsRecordedBlob.arrayBuffer();
+    const buf = await getCtx().decodeAudioData(arrBuf);
+    if(ttsFmt==='wav') triggerDownload(bufferToWav(buf), 'tts_record.wav');
+    else triggerDownload(bufferToMp3(buf), 'tts_record.mp3');
   }
 
-  // ---------- VOICE CHANGER: recording ----------
+  async function sendTtsToChanger(){
+    if(!ttsRecordedBlob){ toast('Сначала запишите озвучку через «Записать вкладку»'); return; }
+    const arrBuf = await ttsRecordedBlob.arrayBuffer();
+    const buf = await getCtx().decodeAudioData(arrBuf);
+    setBuffer(buf, true);
+    document.querySelector('[data-tab="changer"]').click();
+    toast('Озвучка перенесена в «Смену голоса»');
+  }
+
+  // ---- TTS presets (localStorage) ----
+  const TTS_PRESETS_KEY='nightair_tts_presets_v1';
+  function getTtsPresets(){ try{return JSON.parse(localStorage.getItem(TTS_PRESETS_KEY))||[];}catch(e){return [];} }
+  function setTtsPresets(arr){ localStorage.setItem(TTS_PRESETS_KEY, JSON.stringify(arr)); }
+  function saveTtsPreset(){
+    const name=document.getElementById('presetName').value.trim();
+    if(!name){ toast('Введите название пресета'); return; }
+    const p={id:Date.now(), name, voice:selectedVoice,
+      rate:document.getElementById('rate').value, pitch:document.getElementById('pitch').value,
+      vol:document.getElementById('vol').value, pause:document.getElementById('pause').value};
+    const arr=getTtsPresets(); arr.unshift(p); setTtsPresets(arr.slice(0,20));
+    document.getElementById('presetName').value='';
+    renderTtsPresets(); toast('Пресет сохранён');
+  }
+  function renderTtsPresets(){
+    const list=document.getElementById('ttsPresetList');
+    const arr=getTtsPresets();
+    if(arr.length===0){ list.innerHTML='<div class="hint">Нет сохранённых пресетов</div>'; return; }
+    list.innerHTML='';
+    arr.forEach(p=>{
+      const el=document.createElement('div'); el.className='draft-item';
+      el.innerHTML=`<span>${p.name}</span><span class="x" data-id="${p.id}">✕</span>`;
+      el.addEventListener('click',(e)=>{
+        if(e.target.classList.contains('x')){ setTtsPresets(getTtsPresets().filter(x=>x.id!==p.id)); renderTtsPresets(); return; }
+        document.getElementById('rate').value=p.rate; document.getElementById('rate').dispatchEvent(new Event('input'));
+        document.getElementById('pitch').value=p.pitch; document.getElementById('pitch').dispatchEvent(new Event('input'));
+        document.getElementById('vol').value=p.vol; document.getElementById('vol').dispatchEvent(new Event('input'));
+        document.getElementById('pause').value=p.pause; document.getElementById('pause').dispatchEvent(new Event('input'));
+        if(p.voice){ selectedVoice=p.voice; initVoices(); }
+        toast('Пресет применён');
+      });
+      list.appendChild(el);
+    });
+  }
+
+  // ============ RECORDING (voice track) ============
   function setupMeterBars(){
-    const meter = document.getElementById('meter');
-    meter.innerHTML=''; meterBars=[];
+    const meter=document.getElementById('meter'); meter.innerHTML=''; meterBars=[];
     for(let i=0;i<48;i++){ const s=document.createElement('span'); meter.appendChild(s); meterBars.push(s); }
   }
-
   async function toggleRecord(){
-    const btn = document.getElementById('recBtn');
-    const pauseBtn = document.getElementById('pauseRecBtn');
-    if(mediaRecorder && mediaRecorder.state !== 'inactive'){
-      mediaRecorder.stop();
-      micStream.getTracks().forEach(t=>t.stop());
-      btn.classList.remove('on'); btn.textContent='● Записать';
-      pauseBtn.disabled = true; pauseBtn.textContent = '⏸ Пауза';
+    const btn=document.getElementById('recBtn'), pauseBtn=document.getElementById('pauseRecBtn');
+    if(mediaRecorder && mediaRecorder.state!=='inactive'){
+      mediaRecorder.stop(); micStream.getTracks().forEach(t=>t.stop());
+      btn.classList.remove('on'); btn.textContent='● Записать'; pauseBtn.disabled=true; pauseBtn.textContent='⏸ Пауза';
       return;
     }
     try{
       micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(micStream);
-      mediaRecorder.ondataavailable = e=> recordedChunks.push(e.data);
-      mediaRecorder.onstop = async ()=>{
-        const blob = new Blob(recordedChunks, {type:'audio/webm'});
-        const arrBuf = await blob.arrayBuffer();
-        const ctx = getCtx();
-        const buf = await ctx.decodeAudioData(arrBuf);
+      recordedChunks=[];
+      mediaRecorder=new MediaRecorder(micStream);
+      mediaRecorder.ondataavailable=e=>recordedChunks.push(e.data);
+      mediaRecorder.onstop=async()=>{
+        const blob=new Blob(recordedChunks,{type:'audio/webm'});
+        const buf=await getCtx().decodeAudioData(await blob.arrayBuffer());
         setBuffer(buf, true);
         toast('Запись готова — отредактируйте на таймлайне');
       };
       mediaRecorder.start();
-      btn.classList.add('on'); btn.textContent='■ Стоп';
-      pauseBtn.disabled = false; pauseBtn.textContent = '⏸ Пауза';
+      btn.classList.add('on'); btn.textContent='■ Стоп'; pauseBtn.disabled=false; pauseBtn.textContent='⏸ Пауза';
       startMeter(micStream);
     }catch(e){ toast('Нет доступа к микрофону'); }
   }
-
   function togglePauseRecord(){
     if(!mediaRecorder) return;
-    const pauseBtn = document.getElementById('pauseRecBtn');
-    if(mediaRecorder.state === 'recording'){
-      mediaRecorder.pause();
-      pauseBtn.textContent = '● Продолжить';
-      toast('Запись на паузе');
-    } else if(mediaRecorder.state === 'paused'){
-      mediaRecorder.resume();
-      pauseBtn.textContent = '⏸ Пауза';
-      startMeter(micStream);
-      toast('Запись продолжена');
-    }
+    const pauseBtn=document.getElementById('pauseRecBtn');
+    if(mediaRecorder.state==='recording'){ mediaRecorder.pause(); pauseBtn.textContent='● Продолжить'; toast('Запись на паузе'); }
+    else if(mediaRecorder.state==='paused'){ mediaRecorder.resume(); pauseBtn.textContent='⏸ Пауза'; startMeter(micStream); toast('Запись продолжена'); }
   }
-
   function startMeter(stream){
     setupMeterBars();
-    const ctx = getCtx();
-    const src = ctx.createMediaStreamSource(stream);
-    analyser = ctx.createAnalyser(); analyser.fftSize = 128;
-    src.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
+    const ctx=getCtx(); const src=ctx.createMediaStreamSource(stream);
+    analyser=ctx.createAnalyser(); analyser.fftSize=128; src.connect(analyser);
+    const data=new Uint8Array(analyser.frequencyBinCount);
     function draw(){
       if(!mediaRecorder || mediaRecorder.state!=='recording') return;
       analyser.getByteFrequencyData(data);
-      meterBars.forEach((bar,i)=>{
-        const v = data[i % data.length] || 0;
-        bar.style.height = Math.max(2,(v/255)*44)+'px';
-        bar.style.background = v>180 ? 'var(--ember)' : 'var(--static)';
-      });
+      meterBars.forEach((bar,i)=>{ const v=data[i%data.length]||0; bar.style.height=Math.max(2,(v/255)*44)+'px'; bar.style.background=v>180?'var(--ember)':'var(--static)'; });
       requestAnimationFrame(draw);
     }
     draw();
   }
-
-  function getCtx(){
-    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    return audioCtx;
-  }
+  function getCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
 
   function uploadAudio(){ document.getElementById('fileInput').click(); }
+  function uploadBackground(){
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='audio/*';
+    inp.onchange=async(e)=>{
+      const file=e.target.files[0]; if(!file) return;
+      bgBuffer = await getCtx().decodeAudioData(await file.arrayBuffer());
+      drawBgWave(); toast('Фон загружен');
+    };
+    inp.click();
+  }
+  function removeBackground(){ bgBuffer=null; drawBgWave(); toast('Фон убран'); }
+
   document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('fileInput').addEventListener('change', async (e)=>{
-      const file = e.target.files[0];
-      if(!file) return;
-      const arrBuf = await file.arrayBuffer();
-      const ctx = getCtx();
-      const buf = await ctx.decodeAudioData(arrBuf);
+    document.getElementById('fileInput').addEventListener('change', async(e)=>{
+      const file=e.target.files[0]; if(!file) return;
+      const buf=await getCtx().decodeAudioData(await file.arrayBuffer());
       setBuffer(buf, true);
       toast('Файл загружен — отредактируйте на таймлайне');
     });
   });
 
-  // ---------- TIMELINE / WAVEFORM EDITOR ----------
+  // ============ WAVEFORM / TIMELINE ============
   function setBuffer(buf, resetHistory){
-    if(resetHistory) history = [];
+    if(resetHistory){ history=[]; markers=[]; renderMarkerList(); }
     if(currentBuffer) history.push(currentBuffer);
-    currentBuffer = buf;
-    selStart = null; selEnd = null;
+    currentBuffer=buf; selStart=null; selEnd=null;
     document.getElementById('undoBtn').disabled = history.length===0;
-    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
-    document.getElementById('waveEmpty').style.display = 'none';
-    document.getElementById('seekBar').value = 0;
-    document.getElementById('playhead').style.display = 'none';
-    document.getElementById('seekTime').textContent = '0:00';
-    document.getElementById('seekTotal').textContent = fmtTime(buf.duration);
-    drawWave();
+    document.getElementById('historyTag').textContent='История изменений: '+history.length;
+    document.getElementById('waveEmpty').style.display='none';
+    document.getElementById('seekBar').value=0;
+    document.getElementById('playhead').style.display='none';
+    document.getElementById('seekTime').textContent='0:00';
+    document.getElementById('seekTotal').textContent=fmtTime(buf.duration);
+    drawWave(); renderMarkers();
   }
-
   function undo(){
     if(history.length===0) return;
-    currentBuffer = history.pop();
-    selStart = null; selEnd = null;
-    document.getElementById('undoBtn').disabled = history.length===0;
-    document.getElementById('historyTag').textContent = 'История изменений: ' + history.length;
-    drawWave();
-    toast('Отменено');
+    currentBuffer=history.pop(); selStart=null; selEnd=null;
+    document.getElementById('undoBtn').disabled=history.length===0;
+    document.getElementById('historyTag').textContent='История изменений: '+history.length;
+    drawWave(); toast('Отменено');
+  }
+  function fmtTime(s){ if(!isFinite(s)) s=0; const m=Math.floor(s/60), sec=Math.floor(s%60); return m+':'+String(sec).padStart(2,'0'); }
+
+  function currentWidth(){
+    const scroll = document.getElementById('waveScroll');
+    return Math.max(scroll.clientWidth, scroll.clientWidth*zoom);
   }
 
-  function fmtTime(s){
-    if(!isFinite(s)) s=0;
-    const m = Math.floor(s/60), sec = Math.floor(s%60);
-    return m+':'+String(sec).padStart(2,'0');
+  function drawWaveOn(canvas, buf, height){
+    if(!buf) return;
+    const w = currentWidth();
+    canvas.width = w*devicePixelRatio; canvas.height = height*devicePixelRatio;
+    canvas.style.width=w+'px'; canvas.style.height=height+'px';
+    const ctx=canvas.getContext('2d');
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx.clearRect(0,0,w,height);
+    const data=buf.getChannelData(0);
+    const step=Math.ceil(data.length/w);
+    const mid=height/2;
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ember-dim').trim()||'#7a2c1c';
+    for(let x=0;x<w;x++){
+      let min=1,max=-1;
+      for(let j=0;j<step;j++){ const idx=x*step+j; if(idx>=data.length) break; const v=data[idx]; if(v<min)min=v; if(v>max)max=v; }
+      const y1=mid+min*mid*0.92, y2=mid+max*mid*0.92;
+      ctx.fillRect(x,y1,1,Math.max(1,y2-y1));
+    }
   }
 
   function drawWave(){
-    const canvas = document.getElementById('waveCanvas');
-    const wrap = document.getElementById('waveWrap');
+    const wrap=document.getElementById('waveWrap');
     if(!currentBuffer){ document.getElementById('waveEmpty').style.display='flex'; return; }
-    const w = wrap.clientWidth, h = wrap.clientHeight;
-    canvas.width = w * devicePixelRatio; canvas.height = h * devicePixelRatio;
-    canvas.style.width = w+'px'; canvas.style.height = h+'px';
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-    ctx.clearRect(0,0,w,h);
-    const data = currentBuffer.getChannelData(0);
-    const step = Math.ceil(data.length / w);
-    const mid = h/2;
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ember-dim').trim() || '#7a2c1c';
-    for(let x=0;x<w;x++){
-      let min=1, max=-1;
-      for(let j=0;j<step;j++){
-        const idx = x*step+j;
-        if(idx>=data.length) break;
-        const v = data[idx];
-        if(v<min) min=v; if(v>max) max=v;
-      }
-      const y1 = mid + min*mid*0.92;
-      const y2 = mid + max*mid*0.92;
-      ctx.fillRect(x, y1, 1, Math.max(1,y2-y1));
-    }
-    document.getElementById('timeTotal').textContent = fmtTime(currentBuffer.duration);
+    document.getElementById('waveEmpty').style.display='none';
+    drawWaveOn(document.getElementById('waveCanvas'), currentBuffer, 90);
+    document.getElementById('timeTotal').textContent=fmtTime(currentBuffer.duration);
     updateSelOverlay();
+    renderMarkers();
+  }
+  function drawBgWave(){
+    const empty=document.getElementById('bgWaveEmpty');
+    if(!bgBuffer){ empty.style.display='flex'; document.getElementById('bgWaveCanvas').getContext('2d').clearRect(0,0,9999,9999); return; }
+    empty.style.display='none';
+    drawWaveOn(document.getElementById('bgWaveCanvas'), bgBuffer, 46);
   }
 
-  function pxToSec(px){
-    const wrap = document.getElementById('waveWrap');
-    const ratio = px / wrap.clientWidth;
-    return Math.max(0, Math.min(currentBuffer.duration, ratio * currentBuffer.duration));
-  }
-  function secToPx(sec){
-    const wrap = document.getElementById('waveWrap');
-    return (sec/currentBuffer.duration) * wrap.clientWidth;
-  }
+  function pxToSec(px){ const w=currentWidth(); const ratio=px/w; return Math.max(0, Math.min(currentBuffer.duration, ratio*currentBuffer.duration)); }
+  function secToPx(sec){ const w=currentWidth(); return (sec/currentBuffer.duration)*w; }
 
   function updateSelOverlay(){
-    const ov = document.getElementById('selOverlay');
-    if(selStart===null || selEnd===null || !currentBuffer){ ov.style.display='none'; document.getElementById('timeStart').textContent = fmtTime(0); return; }
-    const a = Math.min(selStart, selEnd), b = Math.max(selStart, selEnd);
-    ov.style.display='block';
-    ov.style.left = secToPx(a)+'px';
-    ov.style.width = (secToPx(b)-secToPx(a))+'px';
-    document.getElementById('timeStart').textContent = fmtTime(a)+' – '+fmtTime(b);
+    const ov=document.getElementById('selOverlay');
+    if(selStart===null||selEnd===null||!currentBuffer){ ov.style.display='none'; return; }
+    const a=Math.min(selStart,selEnd), b=Math.max(selStart,selEnd);
+    ov.style.display='block'; ov.style.left=secToPx(a)+'px'; ov.style.width=(secToPx(b)-secToPx(a))+'px';
+    document.getElementById('timeStart').textContent=fmtTime(a)+' – '+fmtTime(b);
   }
 
   function initWaveInteraction(){
-    const wrap = document.getElementById('waveWrap');
-    wrap.addEventListener('pointerdown', (e)=>{
+    const wrap=document.getElementById('waveWrap');
+    wrap.addEventListener('pointerdown',(e)=>{
       if(!currentBuffer) return;
-      isDragging = true;
-      const rect = wrap.getBoundingClientRect();
-      dragStartX = e.clientX - rect.left;
-      selStart = pxToSec(dragStartX); selEnd = selStart;
-      updateSelOverlay();
+      isDragging=true;
+      const rect=wrap.getBoundingClientRect();
+      const x=e.clientX-rect.left+document.getElementById('waveScroll').scrollLeft;
+      selStart=pxToSec(x); selEnd=selStart; updateSelOverlay();
     });
-    wrap.addEventListener('pointermove', (e)=>{
-      if(!isDragging || !currentBuffer) return;
-      const rect = wrap.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      selEnd = pxToSec(x);
-      updateSelOverlay();
+    wrap.addEventListener('pointermove',(e)=>{
+      if(!isDragging||!currentBuffer) return;
+      const rect=wrap.getBoundingClientRect();
+      const x=e.clientX-rect.left+document.getElementById('waveScroll').scrollLeft;
+      selEnd=pxToSec(x); updateSelOverlay();
     });
-    window.addEventListener('pointerup', ()=> isDragging=false);
-    window.addEventListener('resize', drawWave);
+    window.addEventListener('pointerup',()=>isDragging=false);
+    window.addEventListener('resize',()=>{drawWave(); drawBgWave();});
+    wrap.addEventListener('click',(e)=>{
+      if(!currentBuffer) return;
+      const moved=Math.abs((selEnd||0)-(selStart||0));
+      if(moved>0.05) return;
+      const rect=wrap.getBoundingClientRect();
+      const x=e.clientX-rect.left+document.getElementById('waveScroll').scrollLeft;
+      const sec=pxToSec(x);
+      document.getElementById('seekBar').value=Math.round((sec/currentBuffer.duration)*1000);
+      setPlayheadPosition(sec);
+    });
   }
 
   function clearSelection(){ selStart=null; selEnd=null; updateSelOverlay(); }
+  function getSelRange(){ if(selStart===null||selEnd===null||Math.abs(selEnd-selStart)<0.02) return null; return [Math.min(selStart,selEnd), Math.max(selStart,selEnd)]; }
 
-  function getSelRange(){
-    if(selStart===null || selEnd===null || Math.abs(selEnd-selStart) < 0.02) return null;
-    return [Math.min(selStart,selEnd), Math.max(selStart,selEnd)];
+  // ---- zoom ----
+  function zoomIn(){ zoom=Math.min(8, zoom*1.6); document.getElementById('zoomLbl').textContent=zoom.toFixed(1)+'×'; drawWave(); drawBgWave(); }
+  function zoomOut(){ zoom=Math.max(1, zoom/1.6); document.getElementById('zoomLbl').textContent=zoom.toFixed(1)+'×'; drawWave(); drawBgWave(); }
+
+  // ---- markers / chapters ----
+  function addMarker(){
+    if(!currentBuffer){ toast('Сначала запишите голос'); return; }
+    const sec = (parseFloat(document.getElementById('seekBar').value)/1000) * currentBuffer.duration;
+    const label = prompt('Название главы/метки:', 'Глава '+(markers.length+1));
+    if(label===null) return;
+    markers.push({sec, label});
+    markers.sort((a,b)=>a.sec-b.sec);
+    renderMarkers(); renderMarkerList();
+    toast('Метка добавлена');
+  }
+  function renderMarkers(){
+    const layer=document.getElementById('markerLayer');
+    layer.innerHTML='';
+    if(!currentBuffer) return;
+    markers.forEach((m,i)=>{
+      const flag=document.createElement('div');
+      flag.className='marker-flag';
+      flag.style.left=secToPx(m.sec)+'px';
+      flag.style.height='100%';
+      flag.innerHTML=`<div class="tip">${m.label}</div>`;
+      flag.onclick=()=>{
+        document.getElementById('seekBar').value=Math.round((m.sec/currentBuffer.duration)*1000);
+        setPlayheadPosition(m.sec);
+      };
+      layer.appendChild(flag);
+    });
+  }
+  function renderMarkerList(){
+    const ui=document.getElementById('markerListUI');
+    ui.innerHTML='';
+    markers.forEach((m,i)=>{
+      const chip=document.createElement('div'); chip.className='marker-chip';
+      chip.innerHTML=`<span>${m.label} · ${fmtTime(m.sec)}</span><span class="x" data-i="${i}">✕</span>`;
+      chip.querySelector('span:first-child').onclick=()=>{
+        document.getElementById('seekBar').value=Math.round((m.sec/currentBuffer.duration)*1000);
+        setPlayheadPosition(m.sec);
+      };
+      chip.querySelector('.x').onclick=()=>{ markers.splice(i,1); renderMarkers(); renderMarkerList(); };
+      ui.appendChild(chip);
+    });
   }
 
+  // ---- slicing/concat helpers ----
   function sliceBuffer(buf, startSec, endSec){
-    const ctx = getCtx();
-    const sr = buf.sampleRate;
-    const s = Math.floor(startSec*sr), e = Math.floor(endSec*sr);
-    const len = e-s;
-    const out = ctx.createBuffer(buf.numberOfChannels, len, sr);
-    for(let ch=0; ch<buf.numberOfChannels; ch++){
-      out.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+    const ctx=getCtx(); const sr=buf.sampleRate;
+    const s=Math.floor(startSec*sr), e=Math.floor(endSec*sr); const len=Math.max(1,e-s);
+    const out=ctx.createBuffer(buf.numberOfChannels, len, sr);
+    for(let ch=0; ch<buf.numberOfChannels; ch++) out.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+    return out;
+  }
+  function concatBuffers(buffers){
+    const ctx=getCtx(); const numCh=buffers[0].numberOfChannels, sr=buffers[0].sampleRate;
+    const totalLen=buffers.reduce((a,b)=>a+b.length,0);
+    const out=ctx.createBuffer(numCh, totalLen, sr);
+    for(let ch=0; ch<numCh; ch++){
+      let offset=0; const outData=out.getChannelData(ch);
+      buffers.forEach(b=>{ outData.set(b.getChannelData(Math.min(ch,b.numberOfChannels-1)), offset); offset+=b.length; });
     }
     return out;
   }
 
-  function concatBuffers(buffers){
-    const ctx = getCtx();
-    const numCh = buffers[0].numberOfChannels;
-    const sr = buffers[0].sampleRate;
-    const totalLen = buffers.reduce((a,b)=>a+b.length,0);
-    const out = ctx.createBuffer(numCh, totalLen, sr);
-    for(let ch=0; ch<numCh; ch++){
-      let offset = 0;
-      const outData = out.getChannelData(ch);
-      buffers.forEach(b=>{
-        outData.set(b.getChannelData(Math.min(ch,b.numberOfChannels-1)), offset);
-        offset += b.length;
-      });
-    }
-    return out;
+  function shiftMarkersOnDelete(a,b){
+    const dur=b-a;
+    markers = markers.filter(m=> m.sec<a || m.sec>b).map(m=> m.sec>b ? {...m, sec:m.sec-dur} : m);
+  }
+  function shiftMarkersOnInsert(at, dur){
+    markers = markers.map(m=> m.sec>at ? {...m, sec:m.sec+dur} : m);
   }
 
   function deleteSelection(){
-    const range = getSelRange();
-    if(!range){ toast('Сначала выделите участок на волне'); return; }
-    const [a,b] = range;
-    const parts = [];
-    if(a>0) parts.push(sliceBuffer(currentBuffer, 0, a));
-    if(b<currentBuffer.duration) parts.push(sliceBuffer(currentBuffer, b, currentBuffer.duration));
-    const result = parts.length ? concatBuffers(parts) : sliceBuffer(currentBuffer,0,0.01);
-    setBuffer(result, false);
+    const range=getSelRange(); if(!range){ toast('Сначала выделите участок'); return; }
+    const [a,b]=range;
+    const parts=[];
+    if(a>0) parts.push(sliceBuffer(currentBuffer,0,a));
+    if(b<currentBuffer.duration) parts.push(sliceBuffer(currentBuffer,b,currentBuffer.duration));
+    shiftMarkersOnDelete(a,b);
+    setBuffer(parts.length?concatBuffers(parts):sliceBuffer(currentBuffer,0,0.01), false);
+    renderMarkerList();
     toast('Участок удалён');
   }
-
   function duplicateSelection(){
-    const range = getSelRange();
-    if(!range){ toast('Сначала выделите участок для повтора'); return; }
-    const [a,b] = range;
-    const piece = sliceBuffer(currentBuffer, a, b);
-    const parts = [sliceBuffer(currentBuffer,0,b), piece, sliceBuffer(currentBuffer,b,currentBuffer.duration)];
-    const result = concatBuffers(parts);
-    setBuffer(result, false);
-    toast('Участок продублирован — запись удлинена');
+    const range=getSelRange(); if(!range){ toast('Сначала выделите участок для повтора'); return; }
+    const [a,b]=range;
+    const piece=sliceBuffer(currentBuffer,a,b);
+    shiftMarkersOnInsert(b, b-a);
+    setBuffer(concatBuffers([sliceBuffer(currentBuffer,0,b), piece, sliceBuffer(currentBuffer,b,currentBuffer.duration)]), false);
+    renderMarkerList();
+    toast('Участок продублирован');
   }
-
   function addSilence(){
-    const ctx = getCtx();
-    const point = (selEnd!==null) ? Math.max(selStart,selEnd) : (currentBuffer ? currentBuffer.duration : 0);
     if(!currentBuffer){ toast('Сначала запишите голос'); return; }
-    const silence = ctx.createBuffer(currentBuffer.numberOfChannels, Math.floor(1*currentBuffer.sampleRate), currentBuffer.sampleRate);
-    const parts = [sliceBuffer(currentBuffer,0,point), silence, sliceBuffer(currentBuffer,point,currentBuffer.duration)];
-    setBuffer(concatBuffers(parts), false);
+    const ctx=getCtx();
+    const point=(selEnd!==null)?Math.max(selStart,selEnd):currentBuffer.duration;
+    const silence=ctx.createBuffer(currentBuffer.numberOfChannels, Math.floor(1*currentBuffer.sampleRate), currentBuffer.sampleRate);
+    shiftMarkersOnInsert(point, 1);
+    setBuffer(concatBuffers([sliceBuffer(currentBuffer,0,point), silence, sliceBuffer(currentBuffer,point,currentBuffer.duration)]), false);
+    renderMarkerList();
     toast('Добавлена секунда тишины');
   }
 
+  // ============ EFFECTS PROCESSING ============
   function makeDistortionCurve(amount){
-    const k = amount * 2;
-    const n = 44100;
-    const curve = new Float32Array(n);
-    for(let i=0;i<n;i++){
-      const x = i*2/n - 1;
-      curve[i] = (1+k) * x / (1 + k*Math.abs(x));
-    }
+    const k=amount*2, n=44100, curve=new Float32Array(n);
+    for(let i=0;i<n;i++){ const x=i*2/n-1; curve[i]=(1+k)*x/(1+k*Math.abs(x)); }
     return curve;
+  }
+
+  async function processPiece(buf, opts){
+    const {rateFactor, echoAmt, gainAmt, lowpassAmt, highpassAmt, distortAmt, denoiseAmt, compAmt} = opts;
+    const ctx=getCtx();
+    const newLength=Math.ceil(buf.length/rateFactor);
+    const offline=new OfflineAudioContext(buf.numberOfChannels, newLength+ctx.sampleRate*0.5, buf.sampleRate);
+    const srcNode=offline.createBufferSource();
+    srcNode.buffer=buf; srcNode.playbackRate.value=rateFactor;
+    let chain=srcNode;
+
+    if(denoiseAmt>0){
+      const hp=offline.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 60 + (denoiseAmt/100)*180;
+      chain.connect(hp); chain=hp;
+      const lp=offline.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 12000 - (denoiseAmt/100)*4000;
+      chain.connect(lp); chain=lp;
+    }
+    if(distortAmt>0){
+      const shaper=offline.createWaveShaper(); shaper.curve=makeDistortionCurve(distortAmt/8); shaper.oversample='2x';
+      chain.connect(shaper); chain=shaper;
+    }
+    if(lowpassAmt>0){
+      const lp=offline.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=8000-(lowpassAmt/100)*7200;
+      chain.connect(lp); chain=lp;
+    }
+    if(highpassAmt>0){
+      const hp=offline.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=(highpassAmt/100)*2200;
+      chain.connect(hp); chain=hp;
+    }
+    if(compAmt>0){
+      const comp=offline.createDynamicsCompressor();
+      comp.threshold.value = -10 - (compAmt/100)*30;
+      comp.ratio.value = 2 + (compAmt/100)*10;
+      comp.attack.value=0.003; comp.release.value=0.25;
+      chain.connect(comp); chain=comp;
+    }
+    const gainNode=offline.createGain(); gainNode.gain.value=gainAmt;
+    chain.connect(gainNode); gainNode.connect(offline.destination);
+    if(echoAmt>0){
+      const delay=offline.createDelay(1.0); delay.delayTime.value=0.18;
+      const feedback=offline.createGain(); feedback.gain.value=echoAmt;
+      const wet=offline.createGain(); wet.gain.value=echoAmt;
+      chain.connect(delay); delay.connect(feedback); feedback.connect(delay); delay.connect(wet); wet.connect(offline.destination);
+    }
+    srcNode.start(0);
+    return await offline.startRendering();
   }
 
   async function applyVoiceChange(){
     if(!currentBuffer){ toast('Сначала запишите или загрузите голос'); return; }
-    const semitones = parseFloat(document.getElementById('manualPitch').value);
-    const echoAmt = parseFloat(document.getElementById('echoAmt').value);
-    const gainAmt = parseFloat(document.getElementById('gainAmt').value);
-    const lowpassAmt = parseFloat(document.getElementById('lowpassAmt').value);
-    const highpassAmt = parseFloat(document.getElementById('highpassAmt').value);
-    const distortAmt = parseFloat(document.getElementById('distortAmt').value);
-    const rateFactor = Math.pow(2, semitones/12);
-    const range = getSelRange();
-
-    async function processPiece(buf){
-      const ctx = getCtx();
-      const newLength = Math.ceil(buf.length / rateFactor);
-      const offline = new OfflineAudioContext(buf.numberOfChannels, newLength + ctx.sampleRate*0.5, buf.sampleRate);
-      const srcNode = offline.createBufferSource();
-      srcNode.buffer = buf;
-      srcNode.playbackRate.value = rateFactor;
-
-      let chain = srcNode;
-
-      if(distortAmt > 0){
-        const shaper = offline.createWaveShaper();
-        shaper.curve = makeDistortionCurve(distortAmt/8);
-        shaper.oversample = '2x';
-        chain.connect(shaper); chain = shaper;
-      }
-      if(lowpassAmt > 0){
-        const lp = offline.createBiquadFilter();
-        lp.type = 'lowpass';
-        lp.frequency.value = 8000 - (lowpassAmt/100)*7200; // higher slider = more muffled
-        chain.connect(lp); chain = lp;
-      }
-      if(highpassAmt > 0){
-        const hp = offline.createBiquadFilter();
-        hp.type = 'highpass';
-        hp.frequency.value = (highpassAmt/100) * 2200;
-        chain.connect(hp); chain = hp;
-      }
-
-      const gainNode = offline.createGain();
-      gainNode.gain.value = gainAmt;
-      chain.connect(gainNode);
-      gainNode.connect(offline.destination);
-
-      if(echoAmt > 0){
-        const delay = offline.createDelay(1.0); delay.delayTime.value = 0.18;
-        const feedback = offline.createGain(); feedback.gain.value = echoAmt;
-        const wet = offline.createGain(); wet.gain.value = echoAmt;
-        chain.connect(delay); delay.connect(feedback); feedback.connect(delay);
-        delay.connect(wet); wet.connect(offline.destination);
-      }
-      srcNode.start(0);
-      return await offline.startRendering();
-    }
-
+    const opts={
+      rateFactor: Math.pow(2, parseFloat(document.getElementById('manualPitch').value)/12),
+      echoAmt: parseFloat(document.getElementById('echoAmt').value),
+      gainAmt: parseFloat(document.getElementById('gainAmt').value),
+      lowpassAmt: parseFloat(document.getElementById('lowpassAmt').value),
+      highpassAmt: parseFloat(document.getElementById('highpassAmt').value),
+      distortAmt: parseFloat(document.getElementById('distortAmt').value),
+      denoiseAmt: parseFloat(document.getElementById('denoiseAmt').value),
+      compAmt: parseFloat(document.getElementById('compAmt').value),
+    };
+    const range=getSelRange();
     toast('Обработка...');
     if(range){
-      const [a,b] = range;
-      const before = a>0 ? sliceBuffer(currentBuffer,0,a) : null;
-      const mid = sliceBuffer(currentBuffer,a,b);
-      const after = b<currentBuffer.duration ? sliceBuffer(currentBuffer,b,currentBuffer.duration) : null;
-      const processedMid = await processPiece(mid);
-      const parts = [before, processedMid, after].filter(Boolean);
-      setBuffer(concatBuffers(parts), false);
+      const [a,b]=range;
+      const before=a>0?sliceBuffer(currentBuffer,0,a):null;
+      const mid=sliceBuffer(currentBuffer,a,b);
+      const after=b<currentBuffer.duration?sliceBuffer(currentBuffer,b,currentBuffer.duration):null;
+      const processedMid=await processPiece(mid,opts);
+      setBuffer(concatBuffers([before,processedMid,after].filter(Boolean)), false);
     } else {
-      const processed = await processPiece(currentBuffer);
-      setBuffer(processed, false);
+      setBuffer(await processPiece(currentBuffer,opts), false);
     }
     toast('Эффект применён');
   }
 
   function applyGainEnvelope(buf, range, fn){
-    // fn(t01) returns gain multiplier 0..1 at relative position t01 within range
-    const ctx = getCtx();
-    const out = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
-    const [a,b] = range || [0, buf.duration];
-    const sr = buf.sampleRate;
-    const startSample = Math.floor(a*sr), endSample = Math.floor(b*sr);
+    const ctx=getCtx(); const out=ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+    const [a,b]=range||[0,buf.duration]; const sr=buf.sampleRate;
+    const startSample=Math.floor(a*sr), endSample=Math.floor(b*sr);
     for(let ch=0; ch<buf.numberOfChannels; ch++){
-      const inD = buf.getChannelData(ch), outD = out.getChannelData(ch);
+      const inD=buf.getChannelData(ch), outD=out.getChannelData(ch);
       outD.set(inD);
-      for(let i=startSample;i<endSample;i++){
-        const t01 = (i-startSample)/(endSample-startSample);
-        outD[i] = inD[i] * fn(t01);
+      for(let i=startSample;i<endSample;i++){ const t01=(i-startSample)/(endSample-startSample); outD[i]=inD[i]*fn(t01); }
+    }
+    return out;
+  }
+  function fadeIn(){ if(!currentBuffer){toast('Нечего обрабатывать');return;} const range=getSelRange()||[0,currentBuffer.duration]; setBuffer(applyGainEnvelope(currentBuffer,range,t=>t), false); toast('Плавное появление применено'); }
+  function fadeOut(){ if(!currentBuffer){toast('Нечего обрабатывать');return;} const range=getSelRange()||[0,currentBuffer.duration]; setBuffer(applyGainEnvelope(currentBuffer,range,t=>1-t), false); toast('Плавное затухание применено'); }
+  function normalize(){
+    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
+    const buf=currentBuffer; let peak=0;
+    for(let ch=0; ch<buf.numberOfChannels; ch++){ const d=buf.getChannelData(ch); for(let i=0;i<d.length;i++) peak=Math.max(peak,Math.abs(d[i])); }
+    if(peak===0){ toast('Тишина — нормализовать нечего'); return; }
+    const mult=0.97/peak; const out=getCtx().createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+    for(let ch=0; ch<buf.numberOfChannels; ch++){ const inD=buf.getChannelData(ch), outD=out.getChannelData(ch); for(let i=0;i<inD.length;i++) outD[i]=inD[i]*mult; }
+    setBuffer(out, false); toast('Громкость нормализована');
+  }
+
+  // ============ MIXDOWN (voice + bg) ============
+  function buildMixdown(){
+    if(!currentBuffer) return null;
+    if(!bgBuffer) return currentBuffer;
+    const ctx=getCtx();
+    const len=currentBuffer.length, sr=currentBuffer.sampleRate;
+    const out=ctx.createBuffer(currentBuffer.numberOfChannels, len, sr);
+    const bgGain=parseFloat(document.getElementById('bgGain').value);
+    for(let ch=0; ch<out.numberOfChannels; ch++){
+      const voiceD=currentBuffer.getChannelData(Math.min(ch,currentBuffer.numberOfChannels-1));
+      const bgD=bgBuffer.getChannelData(Math.min(ch,bgBuffer.numberOfChannels-1));
+      const outD=out.getChannelData(ch);
+      for(let i=0;i<len;i++){
+        const bgSample = bgD[i % bgD.length] || 0;
+        outD[i] = Math.max(-1, Math.min(1, voiceD[i] + bgSample*bgGain));
       }
     }
     return out;
   }
 
-  function fadeIn(){
-    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
-    const range = getSelRange() || [0, currentBuffer.duration];
-    setBuffer(applyGainEnvelope(currentBuffer, range, t=>t), false);
-    toast('Плавное появление применено');
-  }
-  function fadeOut(){
-    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
-    const range = getSelRange() || [0, currentBuffer.duration];
-    setBuffer(applyGainEnvelope(currentBuffer, range, t=>1-t), false);
-    toast('Плавное затухание применено');
-  }
-  function normalize(){
-    if(!currentBuffer){ toast('Нечего обрабатывать'); return; }
-    const ctx = getCtx();
-    const buf = currentBuffer;
-    let peak = 0;
-    for(let ch=0; ch<buf.numberOfChannels; ch++){
-      const d = buf.getChannelData(ch);
-      for(let i=0;i<d.length;i++) peak = Math.max(peak, Math.abs(d[i]));
-    }
-    if(peak === 0){ toast('Тишина — нормализовать нечего'); return; }
-    const mult = 0.97 / peak;
-    const out = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
-    for(let ch=0; ch<buf.numberOfChannels; ch++){
-      const inD = buf.getChannelData(ch), outD = out.getChannelData(ch);
-      for(let i=0;i<inD.length;i++) outD[i] = inD[i]*mult;
-    }
-    setBuffer(out, false);
-    toast('Громкость нормализована');
-  }
-
-  let playStartedAt = 0, playOffsetSec = 0, playRafId = null, isSeeking = false;
-
+  // ============ PLAYBACK ============
   function playSelection(){
     if(!currentBuffer) return;
     pauseAll();
-    const ctx = getCtx();
-    const range = getSelRange();
+    const ctx=getCtx();
+    const range=getSelRange();
     let startSec, endSec;
-    if(range){ startSec = range[0]; endSec = range[1]; }
-    else {
-      startSec = (parseFloat(document.getElementById('seekBar').value)/1000) * currentBuffer.duration;
-      endSec = currentBuffer.duration;
-    }
-    const buf = sliceBuffer(currentBuffer, startSec, endSec);
-    playingNode = ctx.createBufferSource();
-    playingNode.buffer = buf;
-    playingNode.connect(ctx.destination);
-    playOffsetSec = startSec;
-    playStartedAt = ctx.currentTime;
-    playingNode.start();
-    playingNode.onended = ()=>{ cancelAnimationFrame(playRafId); };
+    if(range){ startSec=range[0]; endSec=range[1]; }
+    else { startSec=(parseFloat(document.getElementById('seekBar').value)/1000)*currentBuffer.duration; endSec=currentBuffer.duration; }
+    const mix = buildMixdown();
+    const buf = sliceBuffer(mix, startSec, endSec);
+    playingNode=ctx.createBufferSource(); playingNode.buffer=buf; playingNode.connect(ctx.destination);
+    playOffsetSec=startSec; playStartedAt=ctx.currentTime; playingNode.start();
+    playingNode.onended=()=>cancelAnimationFrame(playRafId);
     animatePlayhead();
   }
-
   function animatePlayhead(){
-    if(!playingNode || !currentBuffer) return;
-    const ctx = getCtx();
-    const elapsed = ctx.currentTime - playStartedAt;
-    const pos = Math.min(currentBuffer.duration, playOffsetSec + elapsed);
+    if(!playingNode||!currentBuffer) return;
+    const ctx=getCtx(); const elapsed=ctx.currentTime-playStartedAt;
+    const pos=Math.min(currentBuffer.duration, playOffsetSec+elapsed);
     setPlayheadPosition(pos);
-    if(pos < currentBuffer.duration){
-      playRafId = requestAnimationFrame(animatePlayhead);
-    }
+    if(pos<currentBuffer.duration) playRafId=requestAnimationFrame(animatePlayhead);
   }
-
   function setPlayheadPosition(sec){
-    const ph = document.getElementById('playhead');
-    ph.style.display = 'block';
-    ph.style.left = secToPx(sec)+'px';
-    const seekBar = document.getElementById('seekBar');
-    if(!isSeeking) seekBar.value = Math.round((sec/currentBuffer.duration)*1000);
-    document.getElementById('seekTime').textContent = fmtTime(sec);
-    document.getElementById('seekTotal').textContent = fmtTime(currentBuffer.duration);
+    const ph=document.getElementById('playhead');
+    ph.style.display='block'; ph.style.left=secToPx(sec)+'px';
+    if(!isSeeking) document.getElementById('seekBar').value=Math.round((sec/currentBuffer.duration)*1000);
+    document.getElementById('seekTime').textContent=fmtTime(sec);
+    document.getElementById('seekTotal').textContent=fmtTime(currentBuffer.duration);
   }
-
-  function pauseAll(){
-    if(playingNode){ try{playingNode.stop();}catch(e){} playingNode=null; }
-    cancelAnimationFrame(playRafId);
-  }
+  function pauseAll(){ if(playingNode){ try{playingNode.stop();}catch(e){} playingNode=null; } cancelAnimationFrame(playRafId); }
 
   function initSeekBar(){
-    const seekBar = document.getElementById('seekBar');
-    seekBar.addEventListener('pointerdown', ()=> isSeeking = true);
-    seekBar.addEventListener('input', ()=>{
+    const seekBar=document.getElementById('seekBar');
+    seekBar.addEventListener('pointerdown',()=>isSeeking=true);
+    seekBar.addEventListener('input',()=>{
       if(!currentBuffer) return;
-      const sec = (parseFloat(seekBar.value)/1000) * currentBuffer.duration;
-      const ph = document.getElementById('playhead');
-      ph.style.display='block'; ph.style.left = secToPx(sec)+'px';
-      document.getElementById('seekTime').textContent = fmtTime(sec);
-      document.getElementById('seekTotal').textContent = fmtTime(currentBuffer.duration);
+      const sec=(parseFloat(seekBar.value)/1000)*currentBuffer.duration;
+      const ph=document.getElementById('playhead'); ph.style.display='block'; ph.style.left=secToPx(sec)+'px';
+      document.getElementById('seekTime').textContent=fmtTime(sec);
+      document.getElementById('seekTotal').textContent=fmtTime(currentBuffer.duration);
     });
-    seekBar.addEventListener('pointerup', ()=>{ isSeeking = false; });
-    // click on waveform without drag = move seek bar + playhead
-    const wrap = document.getElementById('waveWrap');
-    wrap.addEventListener('click', (e)=>{
-      if(!currentBuffer) return;
-      const moved = Math.abs((selEnd||0) - (selStart||0));
-      if(moved > 0.05) return; // was a drag-selection, ignore click-seek
-      const rect = wrap.getBoundingClientRect();
-      const sec = pxToSec(e.clientX - rect.left);
-      seekBar.value = Math.round((sec/currentBuffer.duration)*1000);
-      setPlayheadPosition(sec);
+    seekBar.addEventListener('pointerup',()=>isSeeking=false);
+  }
+
+  function initHotkeys(){
+    document.addEventListener('keydown',(e)=>{
+      if(document.activeElement && ['TEXTAREA','INPUT'].includes(document.activeElement.tagName)) return;
+      if(!document.getElementById('changer').classList.contains('active')) return;
+      if(e.code==='Space'){ e.preventDefault(); if(playingNode) pauseAll(); else playSelection(); }
+      if(e.key==='Delete' || e.key==='Backspace'){ if(getSelRange()){ e.preventDefault(); deleteSelection(); } }
     });
   }
 
-  function triggerDownload(blob, filename){
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-  }
-
+  // ============ EXPORT ============
+  function triggerDownload(blob, filename){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
   function downloadProcessed(){
     if(!currentBuffer){ toast('Нечего скачивать'); return; }
-    if(changerFmt === 'wav') triggerDownload(bufferToWav(currentBuffer), 'voice_changed.wav');
-    else triggerDownload(bufferToMp3(currentBuffer), 'voice_changed.mp3');
+    const mix=buildMixdown();
+    if(changerFmt==='wav') triggerDownload(bufferToWav(mix), 'voice_changed.wav');
+    else triggerDownload(bufferToMp3(mix), 'voice_changed.mp3');
+  }
+  function exportByMarkers(){
+    if(!currentBuffer){ toast('Нечего экспортировать'); return; }
+    if(markers.length===0){ toast('Сначала расставьте метки глав кнопкой 🚩'); return; }
+    const mix=buildMixdown();
+    const points=[0, ...markers.map(m=>m.sec), currentBuffer.duration];
+    const names=['intro', ...markers.map(m=>m.label.replace(/\s+/g,'_'))];
+    for(let i=0;i<points.length-1;i++){
+      const piece=sliceBuffer(mix, points[i], points[i+1]);
+      const blob = changerFmt==='wav' ? bufferToWav(piece) : bufferToMp3(piece);
+      setTimeout(()=>triggerDownload(blob, `${String(i+1).padStart(2,'0')}_${names[i]||'part'}.${changerFmt}`), i*400);
+    }
+    toast('Экспортирую части по очереди...');
   }
 
-  // PCM AudioBuffer -> WAV Blob
   function bufferToWav(buffer){
-    const numCh = buffer.numberOfChannels;
-    const len = buffer.length * numCh * 2 + 44;
-    const arrBuf = new ArrayBuffer(len);
-    const view = new DataView(arrBuf);
-    const writeStr = (offset, str)=>{ for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
-    writeStr(0,'RIFF'); view.setUint32(4, 36 + buffer.length*numCh*2, true);
+    const numCh=buffer.numberOfChannels, len=buffer.length*numCh*2+44;
+    const arrBuf=new ArrayBuffer(len); const view=new DataView(arrBuf);
+    const writeStr=(o,s)=>{ for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i)); };
+    writeStr(0,'RIFF'); view.setUint32(4,36+buffer.length*numCh*2,true);
     writeStr(8,'WAVE'); writeStr(12,'fmt ');
     view.setUint32(16,16,true); view.setUint16(20,1,true);
     view.setUint16(22,numCh,true); view.setUint32(24,buffer.sampleRate,true);
-    view.setUint32(28, buffer.sampleRate*numCh*2, true);
-    view.setUint16(32, numCh*2, true); view.setUint16(34,16,true);
-    writeStr(36,'data'); view.setUint32(40, buffer.length*numCh*2, true);
-    let offset = 44;
+    view.setUint32(28,buffer.sampleRate*numCh*2,true);
+    view.setUint16(32,numCh*2,true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40,buffer.length*numCh*2,true);
+    let offset=44;
     for(let i=0;i<buffer.length;i++){
       for(let ch=0; ch<numCh; ch++){
-        let sample = buffer.getChannelData(ch)[i];
-        sample = Math.max(-1, Math.min(1, sample));
-        view.setInt16(offset, sample<0 ? sample*0x8000 : sample*0x7FFF, true);
-        offset += 2;
+        let sample=Math.max(-1,Math.min(1,buffer.getChannelData(ch)[i]));
+        view.setInt16(offset, sample<0?sample*0x8000:sample*0x7FFF, true); offset+=2;
       }
     }
-    return new Blob([view], {type:'audio/wav'});
+    return new Blob([view],{type:'audio/wav'});
   }
-
-  // AudioBuffer -> MP3 Blob using lamejs
   function bufferToMp3(buffer){
-    const numCh = Math.min(2, buffer.numberOfChannels);
-    const sampleRate = buffer.sampleRate;
-    const mp3enc = new lamejs.Mp3Encoder(numCh, sampleRate, 128);
-    const blockSize = 1152;
-    const left = floatTo16(buffer.getChannelData(0));
-    const right = numCh>1 ? floatTo16(buffer.getChannelData(1)) : null;
-    const chunks = [];
-    for(let i=0; i<left.length; i+=blockSize){
-      const lChunk = left.subarray(i, i+blockSize);
-      const rChunk = right ? right.subarray(i, i+blockSize) : undefined;
-      const mp3buf = right ? mp3enc.encodeBuffer(lChunk, rChunk) : mp3enc.encodeBuffer(lChunk);
-      if(mp3buf.length>0) chunks.push(mp3buf);
+    const numCh=Math.min(2,buffer.numberOfChannels), sr=buffer.sampleRate;
+    const enc=new lamejs.Mp3Encoder(numCh, sr, 128);
+    const blockSize=1152;
+    const left=floatTo16(buffer.getChannelData(0));
+    const right=numCh>1?floatTo16(buffer.getChannelData(1)):null;
+    const chunks=[];
+    for(let i=0;i<left.length;i+=blockSize){
+      const l=left.subarray(i,i+blockSize), r=right?right.subarray(i,i+blockSize):undefined;
+      const out=right?enc.encodeBuffer(l,r):enc.encodeBuffer(l);
+      if(out.length>0) chunks.push(out);
     }
-    const end = mp3enc.flush();
-    if(end.length>0) chunks.push(end);
-    return new Blob(chunks, {type:'audio/mp3'});
+    const end=enc.flush(); if(end.length>0) chunks.push(end);
+    return new Blob(chunks,{type:'audio/mp3'});
   }
-  function floatTo16(float32){
-    const out = new Int16Array(float32.length);
-    for(let i=0;i<float32.length;i++){
-      let s = Math.max(-1, Math.min(1, float32[i]));
-      out[i] = s<0 ? s*0x8000 : s*0x7FFF;
-    }
-    return out;
-  }
+  function floatTo16(f32){ const out=new Int16Array(f32.length); for(let i=0;i<f32.length;i++){ let s=Math.max(-1,Math.min(1,f32[i])); out[i]=s<0?s*0x8000:s*0x7FFF; } return out; }
 
-  function testVoice(v){
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance('Это тестовая фраза, чтобы услышать тембр голоса.');
-    u.voice = v;
-    window.speechSynthesis.speak(u);
+  // ============ PROJECTS (IndexedDB) ============
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      const req = indexedDB.open('nightair_db', 1);
+      req.onupgradeneeded = ()=>{ req.result.createObjectStore('projects',{keyPath:'id'}); };
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error);
+    });
+  }
+  async function getDB(){ if(!db) db=await openDB(); return db; }
+  function audioBufferToBase64Wav(buf){
+    const blob=bufferToWav(buf);
+    return new Promise((resolve)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function saveProject(){
+    if(!currentBuffer){ toast('Нечего сохранять — сначала запишите голос'); return; }
+    const name=document.getElementById('projectName').value.trim()||'Проект '+new Date().toLocaleDateString('ru-RU');
+    const base64=await audioBufferToBase64Wav(currentBuffer);
+    const project={id:Date.now(), name, base64, markers, ts:new Date().toLocaleString('ru-RU')};
+    try{
+      const database=await getDB();
+      const tx=database.transaction('projects','readwrite');
+      tx.objectStore('projects').put(project);
+      tx.oncomplete=()=>{ renderProjects(); toast('Проект сохранён'); };
+    }catch(e){ toast('Не удалось сохранить проект (возможно, запись слишком большая)'); }
+  }
+  async function renderProjects(){
+    const list=document.getElementById('projectList');
+    try{
+      const database=await getDB();
+      const tx=database.transaction('projects','readonly');
+      const req=tx.objectStore('projects').getAll();
+      req.onsuccess=()=>{
+        const items=req.result.sort((a,b)=>b.id-a.id);
+        if(items.length===0){ list.innerHTML='<div class="hint">Пока нет сохранённых проектов</div>'; return; }
+        list.innerHTML='';
+        items.forEach(p=>{
+          const el=document.createElement('div'); el.className='draft-item';
+          el.innerHTML=`<span>${p.name} <span style="color:var(--bone-dim)">· ${p.ts}</span></span><span class="x" data-id="${p.id}">✕</span>`;
+          el.addEventListener('click', async (e)=>{
+            if(e.target.classList.contains('x')){
+              const database2=await getDB(); const tx2=database2.transaction('projects','readwrite');
+              tx2.objectStore('projects').delete(p.id); tx2.oncomplete=()=>{ renderProjects(); toast('Проект удалён'); };
+              return;
+            }
+            const resp=await fetch(p.base64); const arrBuf=await resp.arrayBuffer();
+            const buf=await getCtx().decodeAudioData(arrBuf);
+            markers = p.markers || [];
+            setBuffer(buf, true);
+            renderMarkers(); renderMarkerList();
+            document.querySelector('[data-tab="changer"]').click();
+            toast('Проект загружен');
+          });
+          list.appendChild(el);
+        });
+      };
+    }catch(e){ list.innerHTML='<div class="hint">IndexedDB недоступен в этом браузере</div>'; }
   }
 
   function init(){
-    initTabs();
-    initVoices();
-    initSliders();
-    initPresets();
-    initFmtToggles();
-    initWaveInteraction();
-    initSeekBar();
+    initTabs(); initVoices(); initSliders(); initPresets(); initFmtToggles();
+    initWaveInteraction(); initSeekBar(); initHotkeys();
     document.getElementById('storyText').addEventListener('input', updateStats);
-    updateStats();
+    updateStats(); renderDrafts(); renderTtsPresets(); renderProjects();
   }
 
-  return {sendToTTS, saveTxt, clearText, speak, stopSpeak, recordTTS, downloadTTS, toggleRecord, togglePauseRecord, uploadAudio,
+  return {sendToTTS, saveTxt, clearText, speak, speakParagraphAtCursor, stopSpeak, recordTTS, downloadTTS, sendTtsToChanger,
+           toggleRecord, togglePauseRecord, uploadAudio, uploadBackground, removeBackground,
            applyVoiceChange, playSelection, pauseAll, deleteSelection, duplicateSelection, addSilence,
-           fadeIn, fadeOut, normalize, undo, clearSelection, downloadProcessed, testVoice, init};
+           fadeIn, fadeOut, normalize, undo, clearSelection, downloadProcessed, exportByMarkers,
+           zoomIn, zoomOut, addMarker, saveDraft, saveTtsPreset, saveProject, init};
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);
